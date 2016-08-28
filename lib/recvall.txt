@@ -12,42 +12,28 @@
 
 #WHILE
 	#COPY
-	#GO 1
-		#ADD
-		#GO 1
-			#NETWORK_RECV
+	#ADD <>1
+	#BLOCK <>2
+		#NETWORK_RECV
 
-			#COPY
-			#GO 1
-				#NOT
-				#IF
-					#GO -2
-						#INC -1
-						#GO -1
-							#ZERO
-						#GO 1
-					#GO 2
-				#ENDIF
-			#GO -1
+		#COPY
+		#NOT <>1
+		#IF <>1
+			#INC -1 <>-2
+			#ZERO <>-3
+		#END
 
-			#FOR
-				#GO -2
-					#INC -1
-				#GO 2
+		#FOR
+			#INC -1 <>-2
 
-				#GO 1
-					#ARRAY_END
-						#ARRAY_APPEND
-						#GO 1
-							#INPUT 1
-						#GO -1
-					#ARRAY_START
-				#GO -1
-			#ENDFOR
-		#GO -1
-	#GO -1
-#ENDWHILE
+			#BLOCK <>1
+				#ARRAY_END
+				#ARRAY_APPEND
+				#INPUT 1 <>1
+				#ARRAY_START
+			#END
+		#END
+	#END
+#END
 
-#GO 1
-	#INC 1
-#GO -1
+#INC 1 <>1

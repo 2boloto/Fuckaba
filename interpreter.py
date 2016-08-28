@@ -11,7 +11,7 @@ with open(argv[1]) as file:
 	code = file.read(maximum_code_length)
 
 	if file.read(1) != "":
-		raise Exception("Too much code")
+		raise Exception("Слишком много кода")
 
 memory = bytearray(memory_length)
 
@@ -25,7 +25,7 @@ for i in range(len(code)):
 		loops[stack.pop()] = i + 1
 
 if len(stack) != 0:
-	raise Exception("Unbalanced brackets")
+	raise Exception("Незакрытая скобка")
 
 pointer = 0
 last_pointer = 0
@@ -55,12 +55,12 @@ while i < len(code):
 			memory[pointer] = memory[pointer] + 1 & 0xff
 		elif code[i] == "<":
 			if pointer == 0:
-				raise Exception("Incorrect left move")
+				raise Exception("Слишком лево")
 
 			pointer -= 1
 		elif code[i] == ">":
 			if pointer == len(memory) - 1:
-				raise Exception("Incorrect right move")
+				raise Exception("Слишком право")
 
 			pointer += 1
 			last_pointer = max(last_pointer, pointer)

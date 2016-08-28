@@ -9,16 +9,17 @@ def command(function):
 
 # Простые команды
 
-@command
-def go_command(count):
-	"Переходит на задданой число ячеек влево или вправо"
-
-	count = int(count)
-
+def move(count):
 	if count > 0:
 		return ">" * count
 	else:
 		return "<" * -count
+
+def increment(count):
+	if count > 0:
+		return "+" * count
+	else:
+		return "-" * -count
 
 def repeat(instruction, count):
 	if count > 0:
@@ -26,9 +27,15 @@ def repeat(instruction, count):
 	else:
 		result = "<".join(instruction * -count)
 
-	result += go_command(-(count - 1)) if count != 0 else ""
+	result += move(-(count - 1)) if count != 0 else ""
 
 	return result
+
+@command
+def go_command(count):
+	"Переходит на задданой число ячеек влево или вправо"
+
+	return move(int(count))
 
 @command
 def input_command(count):
@@ -49,39 +56,10 @@ def zero_command():
 	return "[-]"
 
 @command
-def inc_command(number):
+def inc_command(count):
 	"Увеличивает или уменьшает данную ячеку на заданное число"
 
-	number = int(number)
-
-	if number > 0:
-		return "+" * number
-	else:
-		return "-" * -number
-
-@command
-def if_command():
-	return "["
-
-@command
-def endif_command():
-	return "[-]]"
-
-@command
-def for_command():
-	return "["
-
-@command
-def endfor_command():
-	return "-]"
-
-@command
-def while_command():
-	return "["
-
-@command
-def endwhile_command():
-	return "]"
+	return increment(int(count))
 
 # Команды с несколькими вводами
 
@@ -178,9 +156,9 @@ def test_shift_command(shift, value):
 	shift = int(shift)
 
 	return (
-		go_command(shift) + inc_command(-int(value)) + if_command() +
-		go_command(-shift) + inc_command(1) + go_command(shift) +
-		endif_command() + go_command(-shift)
+		move(shift) + increment(-int(value)) + "[" +
+		move(-shift) + "+" + move(shift) +
+		"[-]]" + move(-shift)
 	)
 
 # Массив
@@ -251,7 +229,7 @@ def network_accept_command():
 		< 0
 	"""
 
-	return output_command(1)
+	return "."
 
 @command
 def network_recv_command():
@@ -267,10 +245,7 @@ def network_recv_command():
 		После этого надо прочитать r байтов - это сами данные.
 	"""
 
-	return (
-		go_command(1) + inc_command(1) + output_command(1) + inc_command(-1) + go_command(-1) +
-		output_command(1) + input_command(1)
-	)
+	return ">+.-<.,"
 
 @command
 def network_send_command():
@@ -286,10 +261,7 @@ def network_send_command():
 		После этого надо вывести l байтов и прочитать 1 - длину действительно отправленного, она может быть меньше l.
 	"""
 
-	return (
-		go_command(1) + inc_command(2) + output_command(1) + inc_command(-2) + go_command(-1) +
-		output_command(1)
-	)
+	return ">++.--<."
 
 @command
 def network_close_command():
@@ -301,7 +273,35 @@ def network_close_command():
 		< 0
 	"""
 
-	return inc_command(3) + output_command(1) + inc_command(-3)
+	return "+++.---"
+
+# Особые команды
+
+def include_command(root, path):
+	path = json.loads(path)
+
+	with open(os.path.join(root, path)) as file:
+		imported = file.read()
+
+	return preprocess(imported, os.path.split(path)[0])
+
+blocks = {
+	"BLOCK": ("", ""),
+	"IF": ("[", "[-]]"),
+	"FOR": ("[", "-]"),
+	"WHILE": ("[", "]")
+}
+
+def start_block_command(stack, block, shift):
+	stack.append((block[1], shift))
+
+	return block[0]
+
+def end_block_command(stack, shift):
+	if shift is not None:
+		raise Exception("Сдвиг у конца блока")
+
+	return stack.pop()
 
 import os.path
 import json
@@ -309,33 +309,46 @@ import json
 def preprocess(code, root = "."):
 	result = ""
 
+	stack = []
+
 	for i in code.split("\n"):
 		i = i.strip().split("//")[0]
 
 		if i.startswith("#"):
 			name, *arguments = i[1: ].split()
 
+			if len(arguments) > 0 and arguments[-1].startswith("<>"):
+				shift = int(arguments.pop()[2: ])
+
+				result += move(shift)
+			else:
+				shift = None
+
 			if name == "INCLUDE":
-				path = json.loads(arguments[0])
-
-				if type(path) is not str or len(arguments) != 1:
-					raise Exception("Wrong import arguments")
-
-				with open(os.path.join(root, path)) as file:
-					imported = file.read()
-
-				result += preprocess(imported, os.path.split(path)[0])
+				result += include_command(root, *arguments)
+			elif name in blocks:
+				result += start_block_command(stack, blocks[name], shift, *arguments)
+				shift = None
+			elif name == "END":
+				code, shift = end_block_command(stack, shift, *arguments)
+				result += code
 			elif name in commands:
 				result += commands[name](*arguments)
 			else:
-				raise Exception("Unknown command")
+				raise Exception("Неизвестная команда")
+
+			if shift is not None:
+				result += move(-shift)
 		else:
 			result += i
 
+	if len(stack) != 0:
+		raise Exception("Не хватает `END`")
+
 	return result
 
-def compress(code):
-	result = ""
+def format(code):
+	result = "#!interpreter\n"
 
 	for i in code:
 		if i in "[],.-+><":
@@ -345,4 +358,4 @@ def compress(code):
 
 import sys
 
-sys.stdout.write("#!interpreter\n" + compress(preprocess(sys.stdin.read())))
+sys.stdout.write(format(preprocess(sys.stdin.read())))
