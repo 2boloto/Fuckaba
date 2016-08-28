@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Интерпретатор работает в дебажном режиме: поддерживает дополнительную команду `~` для вывода байта в стандартный поток ошибок и дампит туда же память после исполнения программы.
+# Интерпретатор работает в дебажном режиме: дампит в стандартный поток ошибок память после исполнения программы
 
 maximum_code_length = 2 ** 20
 memory_length = 2 ** 20
@@ -46,9 +46,6 @@ while i < len(code):
 		elif code[i] == ".":
 			stdout.buffer.write(memory[pointer: pointer + 1])
 			stdout.buffer.flush()
-		elif code[i] == "~":
-			stderr.buffer.write(memory[pointer: pointer + 1])
-			stderr.buffer.flush()
 		elif code[i] == "-":
 			memory[pointer] = memory[pointer] - 1 & 0xff
 		elif code[i] == "+":

@@ -7,6 +7,13 @@ def command(function):
 
 	return function
 
+blocks = {}
+
+def block(function):
+	blocks[function.__name__[: -6].upper()] = function
+
+	return function
+
 # Простые команды
 
 def move(count):
@@ -60,6 +67,30 @@ def inc_command(count):
 	"Увеличивает или уменьшает данную ячеку на заданное число"
 
 	return increment(int(count))
+
+@block
+def block_block():
+	"Блок кода"
+
+	return "", ""
+
+@block
+def if_block():
+	"Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется"
+
+	return "[", "[-]]"
+
+@block
+def for_block():
+	"Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1"
+
+	return "[", "-]"
+
+@block
+def while_block():
+	"Цикл до тех пор, пока данная ячейка не станет нулём"
+
+	return "[", "]"
 
 # Команды с несколькими вводами
 
@@ -217,6 +248,12 @@ def array_pop_command():
 
 	return "<[-]<-"
 
+@block
+def array_foreach_block():
+	"Цикл по каждому элементу массива"
+
+	return ">>[", ">>]"
+
 # Сетевые команды
 
 @command
@@ -285,17 +322,12 @@ def include_command(root, path):
 
 	return preprocess(imported, os.path.split(path)[0])
 
-blocks = {
-	"BLOCK": ("", ""),
-	"IF": ("[", "[-]]"),
-	"FOR": ("[", "-]"),
-	"WHILE": ("[", "]")
-}
+def start_block_command(stack, block, shift, *arguments):
+	start, end = block(*arguments)
 
-def start_block_command(stack, block, shift):
-	stack.append((block[1], shift))
+	stack.append((end, shift))
 
-	return block[0]
+	return start
 
 def end_block_command(stack, shift):
 	if shift is not None:
