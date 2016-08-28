@@ -16,21 +16,17 @@
 	#BLOCK <>2
 		#NETWORK_RECV
 
-		#COPY
-		#NOT <>1
-		#IF <>1
-			#INC -1 <>-2
-			#ZERO <>-3
+		#IFNOT
+			#INC -1 <>-1
+			#ZERO <>-2
 		#END
 
 		#FOR
 			#INC -1 <>-2
 
-			#BLOCK <>1
-				#ARRAY_END
+			#ARRAY_END <>1
 				#ARRAY_APPEND
 				#INPUT 1 <>1
-				#ARRAY_START
 			#END
 		#END
 	#END

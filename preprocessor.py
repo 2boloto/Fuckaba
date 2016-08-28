@@ -81,6 +81,22 @@ def if_block():
 	return "[", "[-]]"
 
 @block
+def ifnot_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - нуль. Если нет, её значение не меняется.
+
+		> a
+		> 0
+		> 0
+
+		> a
+		> 0
+		> 0
+	"""
+
+	return ">>+<<[->+>[-]<<]>[-<+>]>[[-]<<", ">>]<<"
+
+@block
 def for_block():
 	"Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1"
 
@@ -113,6 +129,44 @@ def copy_command():
 	return "[->+>+<<]>>[-<<+>>]<<"
 
 @command
+def copy_shift_command(shift):
+	"""
+		Складывает данную ячейку с соседней и другой указанной.
+
+		> a
+		> b
+		> ...
+		> c
+
+		< a + b
+		< 0
+		> ...
+		< c + a
+
+		Сдвиг может быть отрицательный, но не нулевой.
+
+		Если b и c - нули, то происходит просто копирование.
+	"""
+
+	return "[->+" + move(shift - 1) + "+" + move(-(shift - 1)) + "<]>[-<+>]<"
+
+@command
+def swap():
+	"""
+		Меняет местами две ячейки.
+
+		> a
+		> b
+		> c
+
+		> b
+		> a + c
+		> 0
+	"""
+
+	return "[->>+<<]>[-<+>]>[-<+>]<<"
+
+@command
 def add_command():
 	"""
 		Складывает данную ячеку с соседней.
@@ -139,6 +193,22 @@ def sub_command():
 	"""
 
 	return "[->-<]"
+
+@command
+def sub_copy_command():
+	"""
+		Отнимает от соседней ячейки данную и прибавляет к ней вторую справа.
+
+		> a
+		> b
+		> c
+
+		> a + c
+		> b - a
+		> 0
+	"""
+
+	return "[->->+<<]>>[-<<+>>]<<"
 
 @command
 def subsat_command():
@@ -182,6 +252,8 @@ def test_shift_command(shift, value):
 		< a + 1, если неравно, a, если равно
 		< ...
 		< 0
+
+		Сдвиг может быть отрицательный, но не нулевой.
 	"""
 
 	shift = int(shift)
@@ -225,13 +297,13 @@ def test_shift_command(shift, value):
 """
 
 @command
-def array_end_command():
+def array_go_end_command():
 	"Перемещается в конец массива"
 
 	return ">>[>>]"
 
 @command
-def array_start_command():
+def array_go_start_command():
 	"Перемещается в начало массива"
 
 	return "[<<]"
@@ -247,6 +319,12 @@ def array_pop_command():
 	"Удаляет элемент из массива"
 
 	return "<[-]<-"
+
+@block
+def array_end_block():
+	"Идёт по массиву до конца и назад"
+
+	return ">>[>>]", "[<<]"
 
 @block
 def array_foreach_block():
@@ -379,7 +457,7 @@ def preprocess(code, root = "."):
 
 	return result
 
-def compress(code):
+def format(code):
 	result = ""
 
 	def reorder(code):
@@ -429,12 +507,14 @@ def compress(code):
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.":
+		elif i in "[],.~":
 			result += reorder(fragment) + i
 			fragment = ""
 
-	return result
+	result = "\n".join(result[i: i + 80] for i in range(0, len(result), 80))
+
+	return "#!interpreter\n" + result
 
 import sys
 
-sys.stdout.write("#!interpreter\n" + compress(preprocess(sys.stdin.read())))
+sys.stdout.write(format(preprocess(sys.stdin.read())))
