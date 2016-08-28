@@ -1,99 +1,68 @@
-// Бесконечный цикл
+#INC 38
 
-#INC 1
-#WHILE
-	#BLOCK <>1
-		#NETWORK_ACCEPT
+#BLOCK <>1
+	#INCLUDE "lib/request-start.txt"
+		#INC 20
 
-		// Получаем 4 байта данных
+		#NETWORK_SEND
 
-		#INC 4
-		#INCLUDE "lib/recvall.txt"
+		// Заголовок
 
-		// Проверяем, что не было ошибки и что полученные байты равны `GET `
+		#INC 52
+		#OUTPUT 1
+		#INC 12
+		#OUTPUT 1
+		#INC 0
+		#OUTPUT 1
+		#INC -4
+		#OUTPUT 1
+		#INC -33
+		#OUTPUT 1
+		#INC 2
+		#OUTPUT 1
+		#INC -3
+		#OUTPUT 1
+		#INC 3
+		#OUTPUT 1
+		#INC -17
+		#OUTPUT 1
+		#INC 18
+		#OUTPUT 1
+		#INC -2
+		#OUTPUT 1
+		#INC 0
+		#OUTPUT 1
+		#INC -16
+		#OUTPUT 1
+		#INC 47
+		#OUTPUT 1
+		#INC -4
+		#OUTPUT 1
+		#INC -62
+		#OUTPUT 1
+		#INC -3
+		#OUTPUT 1
+		#INC 3
+		#OUTPUT 1
+		#INC -3
+		#OUTPUT 1
 
-		#TEST_SHIFT 1 1
-		#ZERO <>1
-		#TEST_SHIFT 6 71
-		#ZERO <>6
-		#ZERO <>5
-		#TEST_SHIFT 8 69
-		#ZERO <>8
-		#ZERO <>7
-		#TEST_SHIFT 10 84
-		#ZERO <>10
-		#ZERO <>9
-		#TEST_SHIFT 12 32
-		#ZERO <>12
-		#ZERO <>11
+		// Текст
 
-		#NOT
-		#IF
-			#ZERO
+		#BLOCK <>-8
+			#INC 1
 
-			// Получаем данные до `\r\n\r\n`
-
-			#INCLUDE "lib/recvsep.txt"
-
-			// Если успешно, то отправляем ответ
-
-			#IF <>6
-				#ZERO
-				#INC 22
-
-				#NETWORK_SEND
-
-				#INC 50
-				#OUTPUT 1
-				#INC 12
-				#OUTPUT 1
-				#INC 0
-				#OUTPUT 1
-				#INC -4
-				#OUTPUT 1
-				#INC -33
-				#OUTPUT 1
-				#INC 2
-				#OUTPUT 1
-				#INC -3
-				#OUTPUT 1
-				#INC 3
-				#OUTPUT 1
-				#INC -17
-				#OUTPUT 1
-				#INC 18
-				#OUTPUT 1
-				#INC -2
-				#OUTPUT 1
-				#INC 0
-				#OUTPUT 1
-				#INC -16
-				#OUTPUT 1
-				#INC 47
-				#OUTPUT 1
-				#INC -4
-				#OUTPUT 1
-				#INC -62
-				#OUTPUT 1
-				#INC -3
-				#OUTPUT 1
-				#INC 3
-				#OUTPUT 1
-				#INC -3
-				#OUTPUT 1
-				#INC 62
-				#OUTPUT 1
-				#INC 33
-				#OUTPUT 1
-				#INC -72
-				#OUTPUT 1
-
-				#INPUT 1
+			#FOR
+				#INC 1 <>2
 			#END
-
-			#ZERO <>5
+			#FOR <>2
+				#INC 1 <>-2
+				#INC 1 <>6
+			#END
 		#END
 
-		#NETWORK_CLOSE
-	#END
+		#OUTPUT 1
+
+		#INPUT 1
+	#INCLUDE "lib/request-end.txt"
 #END

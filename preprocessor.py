@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# В комментах к командам символом `>` обозначается состояние памяти перед вызовом, а `<` - после
+# Дефисом после треугольной скобки обозначего положение указателя
+
 commands = {}
 
 def command(function):
@@ -85,13 +88,13 @@ def ifnot_block():
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, её значение не меняется.
 
-		> a
-		> 0
-		> 0
+		>- a
+		>  0
+		>  0
 
-		> a
-		> 0
-		> 0
+		<- a
+		<  0
+		<  0
 	"""
 
 	return ">>+<<[->+>[-]<<]>[-<+>]>[[-]<<", ">>]<<"
@@ -115,13 +118,13 @@ def copy_command():
 	"""
 		Складывает данную ячейку с соседней и второй справа.
 
-		> a
-		> b
-		> c
+		>- a
+		>  b
+		>  c
 
-		< a + c
-		< b + a
-		< 0
+		<- a + c
+		<  b + a
+		<  0
 
 		Если b и c - нули, то происходит просто копирование.
 	"""
@@ -133,15 +136,15 @@ def copy_shift_command(shift):
 	"""
 		Складывает данную ячейку с соседней и другой указанной.
 
-		> a
-		> b
-		> ...
-		> c
+		>- a
+		>  b
+		>  ...
+		>  c
 
-		< a + b
-		< 0
-		> ...
-		< c + a
+		<- a + b
+		<  0
+		<  ...
+		<  c + a
 
 		Сдвиг может быть отрицательный, но не нулевой.
 
@@ -155,13 +158,13 @@ def swap():
 	"""
 		Меняет местами две ячейки.
 
-		> a
-		> b
-		> c
+		>- a
+		>  b
+		>  c
 
-		> b
-		> a + c
-		> 0
+		<- b
+		<  a + c
+		<  0
 	"""
 
 	return "[->>+<<]>[-<+>]>[-<+>]<<"
@@ -171,11 +174,11 @@ def add_command():
 	"""
 		Складывает данную ячеку с соседней.
 
-		> a
-		> b
+		>- a
+		>  b
 
-		< 0
-		< a + b
+		<- 0
+		<  a + b
 	"""
 
 	return "[->+<]"
@@ -185,11 +188,11 @@ def sub_command():
 	"""
 		Отнимает данную ячеку от соседней.
 
-		> a
-		> b
+		>- a
+		>  b
 
-		< 0
-		< b - a
+		<- 0
+		<  b - a
 	"""
 
 	return "[->-<]"
@@ -199,13 +202,13 @@ def sub_copy_command():
 	"""
 		Отнимает от соседней ячейки данную и прибавляет к ней вторую справа.
 
-		> a
-		> b
-		> c
+		>- a
+		>  b
+		>  c
 
-		> a + c
-		> b - a
-		> 0
+		<- a + c
+		<  b - a
+		<  0
 	"""
 
 	return "[->->+<<]>>[-<<+>>]<<"
@@ -215,13 +218,13 @@ def subsat_command():
 	"""
 		Отнимает с насыщением данную ячеку от второй справа. То есть если a > b, то получается их разность, а иначе 0.
 
-		> a
-		> 0
-		> b
+		>- a
+		>  0
+		>  b
 
-		< 0
-		< 0
-		< b - a, если b > 0, иначе 0
+		<- 0
+		<  0
+		<  b - a, если b > 0, иначе 0
 	"""
 
 	return "[>>[-<]<[>]<-]"
@@ -231,11 +234,11 @@ def not_command():
 	"""
 		Обаращает значение данной ячейки.
 
-		> a
-		> 0
+		>- a
+		>  0
 
-		< !a
-		< 0
+		<- !a
+		<  0
 	"""
 
 	return ">+<[[-]>-<]>[-<+>]<"
@@ -245,13 +248,13 @@ def test_shift_command(shift, value):
 	"""
 		Проверяет указанную ячейку на равенство указанному значению.
 
-		> a
-		> ...
-		> b
+		>- a
+		>  ...
+		>  b
 
-		< a + 1, если неравно, a, если равно
-		< ...
-		< 0
+		<- a + 1, если неравно, a, если равно
+		<  ...
+		<  0
 
 		Сдвиг может быть отрицательный, но не нулевой.
 	"""
@@ -339,9 +342,9 @@ def network_accept_command():
 	"""
 		Принимает соединение.
 
-		> 0
+		>- 0
 
-		< 0
+		<- 0
 	"""
 
 	return "."
@@ -351,11 +354,11 @@ def network_recv_command():
 	"""
 		Принимает данные.
 
-		> l - требуемая длина данных
-		> 0
+		>- l - требуемая длина данных
+		>  0
 
-		< r - длина полученных данных, может быть меньше требуемой. Если 0, то соединение прервалось
-		< 0
+		<- r - длина полученных данных, может быть меньше требуемой. Если 0, то соединение прервалось
+		<  0
 
 		После этого надо прочитать r байтов - это сами данные.
 	"""
@@ -367,11 +370,11 @@ def network_send_command():
 	"""
 		Отправляет данные.
 
-		> l - длина
-		> 0
+		>- l - длина
+		>  0
 
-		< l
-		< 0
+		<- l
+		<  0
 
 		После этого надо вывести l байтов и прочитать 1 - длину действительно отправленного, она может быть меньше l.
 	"""
@@ -383,22 +386,22 @@ def network_close_command():
 	"""
 		Закрывает соединение.
 
-		> 0
+		>- 0
 
-		< 0
+		<- 0
 	"""
 
 	return "+++.---"
 
 # Особые команды
 
-def include_command(root, path):
+def include_command(stack, root, path):
 	path = json.loads(path)
 
 	with open(os.path.join(root, path)) as file:
 		imported = file.read()
 
-	return preprocess(imported, os.path.split(path)[0])
+	return preprocess_part(stack, imported, os.path.split(path)[0])
 
 def start_block_command(stack, block, shift, *arguments):
 	start, end = block(*arguments)
@@ -416,10 +419,8 @@ def end_block_command(stack, shift):
 import os.path
 import json
 
-def preprocess(code, root = "."):
+def preprocess_part(stack, code, root):
 	result = ""
-
-	stack = []
 
 	for i in code.split("\n"):
 		i = i.strip().split("//")[0]
@@ -435,7 +436,7 @@ def preprocess(code, root = "."):
 				shift = None
 
 			if name == "INCLUDE":
-				result += include_command(root, *arguments)
+				result += include_command(stack, root, *arguments)
 			elif name in blocks:
 				result += start_block_command(stack, blocks[name], shift, *arguments)
 				shift = None
@@ -451,6 +452,13 @@ def preprocess(code, root = "."):
 				result += move(-shift)
 		else:
 			result += i
+
+	return result
+
+def preprocess(code):
+	stack = []
+
+	result = preprocess_part(stack, code, ".")
 
 	if len(stack) != 0:
 		raise Exception("Не хватает `END`")
