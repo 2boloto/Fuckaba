@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
+# Интерпретатор работает в дебажном режиме: поддерживает дополнительную команду `~` для вывода байта в стандартный поток ошибок и дампит туда же память после исполнения программы.
+
 maximum_code_length = 2 ** 20
 memory_length = 2 ** 20
 
-from sys import argv, stdin, stdout
+from sys import argv, stdin, stdout, stderr
 
 with open(argv[1]) as file:
 	code = file.read(maximum_code_length)
@@ -26,6 +28,7 @@ if len(stack) != 0:
 	raise Exception("Unbalanced brackets")
 
 pointer = 0
+last_pointer = 0
 i = 0
 
 while i < len(code):
@@ -43,6 +46,9 @@ while i < len(code):
 		elif code[i] == ".":
 			stdout.buffer.write(memory[pointer: pointer + 1])
 			stdout.buffer.flush()
+		elif code[i] == "~":
+			stderr.buffer.write(memory[pointer: pointer + 1])
+			stderr.buffer.flush()
 		elif code[i] == "-":
 			memory[pointer] = memory[pointer] - 1 & 0xff
 		elif code[i] == "+":
@@ -57,5 +63,8 @@ while i < len(code):
 				raise Exception("Incorrect right move")
 
 			pointer += 1
+			last_pointer = max(last_pointer, pointer)
 
 		i += 1
+
+stderr.write(repr(memory[: last_pointer + 1]))

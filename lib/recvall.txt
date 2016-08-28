@@ -1,0 +1,30 @@
+// Принимает из сети заданное количество байтов, повторяя вызов команды `recv`, если та возвращает меньше.
+
+// < l - длина
+// < 0
+// < место для массива
+
+// > 0
+// > 0
+// > массив
+
+#WHILE
+	#COPY
+	#GO 1
+		#NETWORK_RECV
+		#FOR
+			#GO -1
+				#INC -1
+			#GO 1
+
+			#GO 1
+				#ARRAY_END
+				#ARRAY_APPEND
+				#GO 1
+					#INPUT 1
+				#GO -1
+				#ARRAY_START
+			#GO -1
+		#ENDFOR
+	#GO -1
+#ENDWHILE

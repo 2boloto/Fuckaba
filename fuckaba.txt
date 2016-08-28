@@ -1,8 +1,1 @@
-#INPUT 1
-#ADD -63 // Код символа "?"
-#NOT
-#IF
-	#ZERO
-	#ADD 33 // "!"
-	#OUTPUT 1
-#ENDIF
+#INCLUDE "lib/recvall.txt"

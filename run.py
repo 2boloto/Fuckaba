@@ -25,15 +25,18 @@ with socket.socket() as s:
 
 			print("Соединение начато")
 		elif command == 1:
-			print("Получение данных")
+			length = process.stdout.read(1)[0]
 
-			received = connection.recv(255)
+			print("Получение данных (длина: {})".format(length))
+
+			received = connection.recv(length)
 
 			print("Данные получены {!r} (длина: {})".format(received, len(received)))
 
 			result = bytes([len(received)]) + received
 		elif command == 2:
-			data = process.stdout.read(process.stdout.read(1)[0])
+			length = process.stdout.read(1)[0]
+			data = process.stdout.read(length)
 
 			print("Отправка данных {!r} (длина: {})".format(data, len(data)))
 
