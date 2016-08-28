@@ -401,8 +401,6 @@ def compress(code):
 			result += reorder(fragment) + i
 			fragment = ""
 
-	result += reorder(fragment)
-
 	return result
 
 import sys
