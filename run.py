@@ -7,6 +7,8 @@ import subprocess
 import socket
 
 with socket.socket() as s:
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 	s.bind(address)
 	s.listen()
 

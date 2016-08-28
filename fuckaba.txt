@@ -1,1 +1,4 @@
+#NETWORK_ACCEPT
+
+#INC 4
 #INCLUDE "lib/recvall.txt"
