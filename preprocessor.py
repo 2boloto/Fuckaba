@@ -347,15 +347,64 @@ def preprocess(code, root = "."):
 
 	return result
 
-def format(code):
-	result = "#!interpreter\n"
+def compress(code):
+	result = ""
+
+	def reorder(code):
+		shift = 0
+		differences = {}
+
+		for i in code:
+			if i == "-":
+				differences[shift] = differences.get(shift, 0) - 1
+			elif i == "+":
+				differences[shift] = differences.get(shift, 0) + 1
+			elif i == "<":
+				shift -= 1
+			else:
+				shift += 1
+
+		left_moves = list(sorted((i for i in differences if i < 0), reverse = True))
+		right_moves = list(sorted(i for i in differences if i >= 0))
+
+		result = ""
+		pointer = 0
+
+		def encode(moves):
+			nonlocal result, pointer
+
+			for i in moves:
+				difference = differences[i] % 256
+
+				result += move(i - pointer)
+				result += increment(difference if difference <= 128 else -(256 - difference))
+				pointer = i
+
+		if shift > 0:
+			encode(left_moves)
+			encode(right_moves)
+		else:
+			encode(right_moves)
+			encode(left_moves)
+
+		result += move(shift - pointer)
+		pointer = shift
+
+		return result
+
+	fragment = ""
 
 	for i in code:
-		if i in "[],.-+><":
-			result += i
+		if i in "-+><":
+			fragment += i
+		elif i in "[],.":
+			result += reorder(fragment) + i
+			fragment = ""
+
+	result += reorder(fragment)
 
 	return result
 
 import sys
 
-sys.stdout.write(format(preprocess(sys.stdin.read())))
+sys.stdout.write("#!interpreter\n" + compress(preprocess(sys.stdin.read())))
