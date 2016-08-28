@@ -35,7 +35,7 @@ def output_command(count):
 	return repeat(".", int(count))
 
 @command
-def zero_command(shift):
+def zero_command():
 	return "[-]"
 
 @command
@@ -45,7 +45,19 @@ def add_command(number):
 	if number > 0:
 		return "+" * number
 	else:
-		return "-" * number
+		return "-" * -number
+
+@command
+def not_command():
+	return ">+<[[-]>-<]>[-<+>]<"
+
+@command
+def if_command():
+	return "["
+
+@command
+def endif_command():
+	return "[-]]"
 
 import os.path
 import json
