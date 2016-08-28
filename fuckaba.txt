@@ -2,3 +2,13 @@
 
 #INC 4
 #INCLUDE "lib/recvall.txt"
+
+// Проверяем, что не было ошибки и что полученные байты равны `GET `
+
+#TEST_SHIFT 1 1
+#TEST_SHIFT 6 71
+#TEST_SHIFT 8 69
+#TEST_SHIFT 10 84
+#TEST_SHIFT 12 32
+
+#NETWORK_CLOSE

@@ -88,15 +88,17 @@ def endwhile_command():
 @command
 def copy_command():
 	"""
-		Копирует данную ячейку в соседнюю.
+		Складывает данную ячейку с соседней и второй справа.
 
 		> a
-		> 0
-		> 0
+		> b
+		> c
 
-		< a
-		< a
+		< a + c
+		< b + a
 		< 0
+
+		Если b и c - нули, то происходит просто копирование.
 	"""
 
 	return "[->+>+<<]>>[-<<+>>]<<"
@@ -159,6 +161,28 @@ def not_command():
 
 	return ">+<[[-]>-<]>[-<+>]<"
 
+@command
+def test_shift_command(shift, value):
+	"""
+		Проверяет указанную ячейку на равенство указанному значению.
+
+		> a
+		> ...
+		> b
+
+		< a + 1, если неравно, a, если равно
+		< ...
+		< 0
+	"""
+
+	shift = int(shift)
+
+	return (
+		go_command(shift) + inc_command(-int(value)) + if_command() +
+		go_command(-shift) + inc_command(1) + go_command(shift) +
+		endif_command() + go_command(-shift)
+	)
+
 # Массив
 
 """
@@ -219,7 +243,13 @@ def array_pop_command():
 
 @command
 def network_accept_command():
-	"Принимает соединение"
+	"""
+		Принимает соединение.
+
+		> 0
+
+		< 0
+	"""
 
 	return output_command(1)
 
@@ -231,7 +261,7 @@ def network_recv_command():
 		> l - требуемая длина данных
 		> 0
 
-		< r - длина полученных данных, может быть меньше требуемой
+		< r - длина полученных данных, может быть меньше требуемой. Если 0, то соединение прервалось
 		< 0
 
 		После этого надо прочитать r байтов - это сами данные.
@@ -263,9 +293,15 @@ def network_send_command():
 
 @command
 def network_close_command():
-	"Закрывает соединение"
+	"""
+		Закрывает соединение.
 
-	return inc_command(3) + output_command(1)
+		> 0
+
+		< 0
+	"""
+
+	return inc_command(3) + output_command(1) + inc_command(-3)
 
 import os.path
 import json
