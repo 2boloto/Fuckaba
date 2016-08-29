@@ -28,14 +28,14 @@
 		#INC 255
 		#NETWORK_RECV
 
-		#IFNOT
+		#ELSE
 			#INPUT 1
 
-			#IFNOT
+			#ELSE
 				#INC -1 <>-1
 			#END
 
-			#FOR
+			#FOR_L
 				#BLOCK <>1
 					#INPUT 1
 					#INC -10
@@ -49,16 +49,14 @@
 						#INC 3 <>2
 					#END
 
-					#IFNOT
+					#ELSE
 						#BLOCK <>4
 							#INC -3
 
-							#IFNOT
-								#INC -1 <>-5
+							#ELSE
 								#FOR <>-5
 									#INPUT 1 <>1
 								#END
-								#INC 1 <>-5
 
 								#INC -1 <>-6
 								#ZERO <>-4

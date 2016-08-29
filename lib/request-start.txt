@@ -37,11 +37,10 @@
 	#BLOCK <>1
 		#NETWORK_ACCEPT
 
-		#NOT
-		#IF
+		#UNLESS
 			// Получаем 4 байта данных
 
-			#INC 3
+			#INC 4
 			#INCLUDE "recvall.txt"
 
 			// Проверяем, что полученные байты равны `GET `
@@ -55,14 +54,11 @@
 			#TEST_SHIFT 12 32
 			#ZERO <>11
 
-			#IF
-				#ZERO
-
+			#IF_L
 				// Получаем данные до `\r\n\r\n`
 
 				#INCLUDE "recvsep.txt"
 
 				// Если успешно, то отправляем ответ
 
-				#IF
-					#ZERO
+				#IF_L

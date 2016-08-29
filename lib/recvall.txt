@@ -16,10 +16,10 @@
 	#BLOCK <>2
 		#NETWORK_RECV
 
-		#IFNOT
+		#ELSE
 			#INPUT 1
 
-			#IFNOT
+			#ELSE
 				#INC -1 <>-1
 				#ZERO <>-2
 			#END
