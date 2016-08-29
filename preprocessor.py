@@ -3,6 +3,9 @@
 # В комментах к командам символом `>` обозначается состояние памяти перед вызовом, а `<` - после
 # Дефисом после треугольной скобки обозначего положение указателя
 
+import os.path
+import json
+
 commands = {}
 
 def command(function):
@@ -71,6 +74,24 @@ def inc_command(count):
 
 	return increment(int(count))
 
+@command
+def include_command(path):
+	"Вставляет код из другого файла, обработав его препроцессором"
+
+	global root
+
+	path = os.path.join(root, json.loads(path))
+
+	with open(path) as file:
+		code = file.read()
+
+	temp = root
+	root = os.path.split(path)[0]
+	result = preprocess_part(code)
+	root = temp
+
+	return result
+
 @block
 def block_block():
 	"Блок кода"
@@ -134,7 +155,7 @@ def copy_command():
 @command
 def copy_shift_command(shift):
 	"""
-		Складывает данную ячейку с соседней и другой указанной и её соседней
+		Складывает данную ячейку с другой и её соседней
 
 		>- a
 		>  ...
@@ -304,19 +325,31 @@ def array_go_end_command():
 def array_go_start_command():
 	"Перемещается в начало массива"
 
-	return "[<<]"
+	return "<<[<<]"
 
 @command
 def array_append_command():
-	"Добавляет нулевой элемент в массив. Указатель должен быть на конце"
+	"Добавляет элемент в массив. Указатель должен быть на конце"
 
-	return "+"
+	return "+>>"
 
 @command
 def array_pop_command():
 	"Удаляет элемент из массива. Указатель должен быть на конце"
 
-	return "<[-]<-"
+	return "<<-"
+
+@command
+def array_shift_command():
+	"Добавляет элемент в массив. Указатель должен быть на начале"
+
+	return "+<<"
+
+@command
+def array_unshift_command():
+	"Удаляет элемент из массива. Указатель должен быть на начале"
+
+	return ">>-"
 
 @command
 def array_clear_command():
@@ -325,14 +358,20 @@ def array_clear_command():
 	return ">>[>>]<<[->[-]<<<]"
 
 @block
+def array_start_block():
+	"Идёт по массиву до начала и назад"
+
+	return "<<[<<]", ">>[>>]"
+
+@block
 def array_end_block():
 	"Идёт по массиву до конца и назад"
 
-	return ">>[>>]", "[<<]"
+	return ">>[>>]", "<<[<<]"
 
 @block
 def array_foreach_block():
-	"Цикл по каждому элементу массива"
+	"Цикл по каждому элементу массива. Указатель остаётся на конце"
 
 	return ">>[", ">>]"
 
@@ -394,33 +433,54 @@ def network_close_command():
 
 	return "+++.---"
 
-# Особые команды
+# База данных
 
-def include_command(stack, root, path):
-	path = json.loads(path)
+"""
+	Файл загружается в память, как последовательность массивов по 255 байтов длиной, последний может дополняться переводами строки.
 
-	with open(os.path.join(root, path)) as file:
-		imported = file.read()
+	...
 
-	return preprocess_part(stack, imported, os.path.split(path)[0])
+	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд.
+"""
 
-def start_block_command(stack, block, shift, *arguments):
+def fill_bytes(data):
+	return "".join(increment(i) + ">" for i in data)
+
+def encode_array(data):
+	return b"\x00\x00" + b"".join(b"\x01" + bytes([i]) for i in data) + b"\x00\x00"
+
+@command
+def file_load_command(path):
+	"..."
+
+	path = os.path.join(root, json.loads(path))
+
+	with open(path, "rb") as file:
+		data = file.read()
+
+	result = encode_array(data + b"\n" * (255 - len(data)))
+
+	return fill_bytes(result) + "<<"
+
+# Препроцессор
+
+root = None
+stack = None
+
+def start_block_command(block, shift, *arguments):
 	start, end = block(*arguments)
 
 	stack.append((end, shift))
 
 	return start
 
-def end_block_command(stack, shift):
+def end_block_command(shift):
 	if shift is not None:
 		raise Exception("Сдвиг у конца блока")
 
 	return stack.pop()
 
-import os.path
-import json
-
-def preprocess_part(stack, code, root):
+def preprocess_part(code):
 	result = ""
 
 	for i in code.split("\n"):
@@ -436,13 +496,11 @@ def preprocess_part(stack, code, root):
 			else:
 				shift = None
 
-			if name == "INCLUDE":
-				result += include_command(stack, root, *arguments)
-			elif name in blocks:
-				result += start_block_command(stack, blocks[name], shift, *arguments)
+			if name in blocks:
+				result += start_block_command(blocks[name], shift, *arguments)
 				shift = None
 			elif name == "END":
-				code, shift = end_block_command(stack, shift, *arguments)
+				code, shift = end_block_command(shift, *arguments)
 				result += code
 			elif name in commands:
 				result += commands[name](*arguments)
@@ -457,9 +515,12 @@ def preprocess_part(stack, code, root):
 	return result
 
 def preprocess(code):
+	global root, stack
+
+	root = "."
 	stack = []
 
-	result = preprocess_part(stack, code, ".")
+	result = preprocess_part(code)
 
 	if len(stack) != 0:
 		raise Exception("Не хватает `END`")

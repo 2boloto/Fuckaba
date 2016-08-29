@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Server: Fuckaba 1.0.0
+
+<!doctype HTML>
+
+<meta charset = "UTF-8" />
+
+<title>Статика</title>
+
+<h1>Настоящая ХТМЛ-страница</h1>
+
+<p>Нужно больше 255 байтов протестировать.</p>

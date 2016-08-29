@@ -1,0 +1,63 @@
+// Отправляет массив из 255 байтов в сеть, повторяя вызов `send`, если тот возвращает не всё.
+
+// >  массив
+// >- 0
+// >  0
+// >  0
+// >  0
+
+// <  массив
+// <- 1, если успешно, иначе 0
+// <  0
+// <  0
+// <  0
+
+#INC 255
+#WHILE
+	#COPY
+
+	#BLOCK <>1
+		#NETWORK_SEND
+
+		#BLOCK <>-3
+			#ARRAY_GO_START
+			#ARRAY_FOREACH
+				#OUTPUT 1 <>1
+			#END
+		#END
+
+		#BLOCK <>1
+			#INPUT 1
+
+			#NOT
+			#IF
+				#INC -1 <>1
+				#INPUT 1 <>-1
+			#END
+
+			#INC 1 <>1
+		#END
+
+		#FOR
+			#INC -1 <>-1
+
+			#BLOCK <>-3
+				#ARRAY_GO_START
+				#GO 2
+				#INC -1
+				#ARRAY_GO_END
+			#END
+		#END
+	#END
+#END
+
+#INC 255
+#FOR
+	#BLOCK <>-2
+		#ARRAY_GO_START
+		#INC 1
+		#ARRAY_GO_END
+	#END
+#END
+
+#NOT_SHIFT 3

@@ -67,7 +67,12 @@ while i < len(code):
 
 			dump = binascii.hexlify(memory[: last_pointer + 1]).decode()
 
-			sys.stderr.write("Память (указатель: {}, инструкция: {}): {}\n".format(pointer, i, " ".join(dump[i: i + 2] for i in range(0, len(dump), 2))))
+			sys.stderr.write("Память (указатель: {}, инструкция: {}): {}\n".format(
+				pointer,
+				i,
+				" ".join(dump[j: j + 2] + ("<" if pointer == j // 2 else "") for j in range(0, len(dump), 2))
+			))
+
 			sys.stderr.flush()
 
 		i += 1

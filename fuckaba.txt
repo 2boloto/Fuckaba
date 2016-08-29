@@ -1,64 +1,10 @@
-#INC 38
+#FILE_LOAD "response.bin"
 
-#BLOCK <>1
+#BLOCK <>6
 	#INCLUDE "lib/request-start.txt"
-		#INC 20
-
-		#NETWORK_SEND
-
-		// Заголовок
-
-		#INC 52
-		#OUTPUT 1
-		#INC 12
-		#OUTPUT 1
-		#INC 0
-		#OUTPUT 1
-		#INC -4
-		#OUTPUT 1
-		#INC -33
-		#OUTPUT 1
-		#INC 2
-		#OUTPUT 1
-		#INC -3
-		#OUTPUT 1
-		#INC 3
-		#OUTPUT 1
-		#INC -17
-		#OUTPUT 1
-		#INC 18
-		#OUTPUT 1
-		#INC -2
-		#OUTPUT 1
-		#INC 0
-		#OUTPUT 1
-		#INC -16
-		#OUTPUT 1
-		#INC 47
-		#OUTPUT 1
-		#INC -4
-		#OUTPUT 1
-		#INC -62
-		#OUTPUT 1
-		#INC -3
-		#OUTPUT 1
-		#INC 3
-		#OUTPUT 1
-		#INC -3
-		#OUTPUT 1
-
-		// Текст
-
-		#INC 1 <>-2
-		#COPY_SHIFT 2 <>-2
-
-		#OUTPUT 1
-
-		#INPUT 1
-
-		#NOT
-		#IF
-			#INPUT 1
+		#BLOCK <>-5
+			#INCLUDE "lib/sendall.txt"
+			#ZERO
 		#END
 	#INCLUDE "lib/request-end.txt"
 #END
