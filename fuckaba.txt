@@ -1,10 +1,13 @@
-#FILE_LOAD "response.bin"
+#DATABASE_LOAD "response.bin"
 
-#BLOCK <>6
+#BLOCK <>4
 	#INCLUDE "lib/request-start.txt"
 		#BLOCK <>-5
-			#INCLUDE "lib/sendall.txt"
-			#ZERO
+			#DATABASE_GO_START
+			#DATABASE_FOREACH
+				#INCLUDE "lib/sendall.txt"
+				#ZERO
+			#END
 		#END
 	#INCLUDE "lib/request-end.txt"
 #END

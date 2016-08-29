@@ -249,7 +249,7 @@ def not_shift_command(shift):
 		Обаращает значение заданной ячейки.
 
 		>- 0
-		<  ...
+		>  ...
 		>  a
 
 		<- !a
@@ -436,11 +436,16 @@ def network_close_command():
 # База данных
 
 """
-	Файл загружается в память, как последовательность массивов по 255 байтов длиной, последний может дополняться переводами строки.
+	База загружается в память, как последовательность массивов по 255 байтов длиной, последний может дополняться переводами строки. После каждого массива:
 
-	...
+	>  0, если это первый массив, иначе 1
+	>  0, если это последний массив, иначе 1
+	>- 0
+	>  0
+	>  0
+	>  0
 
-	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд.
+	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель в на четвёртой ячейке из этого списка.
 """
 
 def fill_bytes(data):
@@ -450,17 +455,48 @@ def encode_array(data):
 	return b"\x00\x00" + b"".join(b"\x01" + bytes([i]) for i in data) + b"\x00\x00"
 
 @command
-def file_load_command(path):
-	"..."
+def database_load_command(path):
+	"Загружает базу данных из файла в память"
 
 	path = os.path.join(root, json.loads(path))
 
 	with open(path, "rb") as file:
 		data = file.read()
 
-	result = encode_array(data + b"\n" * (255 - len(data)))
+	result = b""
 
-	return fill_bytes(result) + "<<"
+	for i in range(0, len(data), 255):
+		chunk = data[i: i + 255]
+
+		first = i == 0
+		last = i >= len(data) - 255
+
+		result += (
+			encode_array(chunk + b"\n" * (255 - len(chunk))) +
+			(b"\x00" if first else b"\x01") +
+			(b"\x00" if last else b"\x01") +
+			b"\x00\x00\x00\x00"
+		)
+
+	return fill_bytes(result) + "<<<<"
+
+@command
+def database_go_end_command():
+	"Переходит к последнему чанку"
+
+	return "<[>>>>>" + array_go_end_command() + ">>>]>"
+
+@command
+def database_go_start_command():
+	"Переходит к первому чанку"
+
+	return "<<[<<" + array_go_start_command() + "<<<<<<]>>"
+
+@block
+def database_foreach_block():
+	"Цикл по каждому чанку. Указатель остаётся на последнем"
+
+	return "+[-", "<[>>>>>" + array_go_end_command() + ">>>[->+<]>>+<<]>[-<+>]>[-<+>]<]"
 
 # Препроцессор
 
