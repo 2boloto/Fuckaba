@@ -49,20 +49,16 @@
 
 		// Текст
 
-		#BLOCK <>-8
-			#INC 1
-
-			#FOR
-				#INC 1 <>2
-			#END
-			#FOR <>2
-				#INC 1 <>-2
-				#INC 1 <>6
-			#END
-		#END
+		#INC 1 <>-2
+		#COPY_SHIFT 2 <>-2
 
 		#OUTPUT 1
 
 		#INPUT 1
+
+		#NOT
+		#IF
+			#INPUT 1
+		#END
 	#INCLUDE "lib/request-end.txt"
 #END

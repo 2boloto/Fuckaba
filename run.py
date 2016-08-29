@@ -23,28 +23,47 @@ with socket.socket() as s:
 		if command == 0:
 			print("Ожидание соединения")
 
-			connection = s.accept()[0]
+			try:
+				connection = s.accept()[0]
 
-			print("Соединение начато")
+				print("Соединение начато")
+
+				result += b"\x00"
+			except ConnectionAbortedError:
+				print("Соединение отменено")
+
+				result += b"\x01"
 		elif command == 1:
 			length = process.stdout.read(1)[0]
 
 			print("Получение данных (длина: {})".format(length))
 
-			received = connection.recv(length)
+			try:
+				received = connection.recv(length)
 
-			print("Данные получены {!r} (длина: {})".format(received, len(received)))
+				print("Данные получены {!r} (длина: {})".format(received, len(received)))
 
-			result = bytes([len(received)]) + received
+				result += b"\x00" + bytes([len(received)]) + received
+			except ConnectionResetError:
+				print("Соединение прервано")
+
+				result += b"\x01"
 		elif command == 2:
 			length = process.stdout.read(1)[0]
 			data = process.stdout.read(length)
 
 			print("Отправка данных {!r} (длина: {})".format(data, len(data)))
 
-			result = bytes([connection.send(data)])
+			try:
+				sent = connection.send(data)
 
-			print("Отправленно байтов: {}".format(result[0]))
+				print("Отправленно байтов: {}".format(sent))
+
+				result += b"\x00" + bytes([sent])
+			except ConnectionResetError:
+				print("Соединение прервано")
+
+				result += b"\x01"
 		elif command == 3:
 			print("Закрытие соединения")
 

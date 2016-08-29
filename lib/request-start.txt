@@ -16,13 +16,13 @@
 // >  0
 
 // <  1
-// <  0
-// <  0
-// <  0
-// <  0
-// <  0
-// <  0
 // <- 0
+// <  0
+// <  0
+// <  0
+// <  0
+// <  0
+// <  0
 // <  0
 // <  0
 // <  0
@@ -37,38 +37,32 @@
 	#BLOCK <>1
 		#NETWORK_ACCEPT
 
-		// Получаем 4 байта данных
-
-		#INC 4
-		#INCLUDE "recvall.txt"
-
-		// Проверяем, что не было ошибки и что полученные байты равны `GET `
-
-		#TEST_SHIFT 1 1
-		#ZERO <>1
-		#TEST_SHIFT 6 71
-		#ZERO <>6
-		#ZERO <>5
-		#TEST_SHIFT 8 69
-		#ZERO <>8
-		#ZERO <>7
-		#TEST_SHIFT 10 84
-		#ZERO <>10
-		#ZERO <>9
-		#TEST_SHIFT 12 32
-		#ZERO <>12
-		#ZERO <>11
-
 		#NOT
 		#IF
-			#ZERO
+			// Получаем 4 байта данных
 
-			// Получаем данные до `\r\n\r\n`
+			#INC 3
+			#INCLUDE "recvall.txt"
 
-			#INCLUDE "recvsep.txt"
+			// Проверяем, что полученные байты равны `GET `
+
+			#TEST_SHIFT 6 71
 			#ZERO <>5
+			#TEST_SHIFT 8 69
+			#ZERO <>7
+			#TEST_SHIFT 10 84
+			#ZERO <>9
+			#TEST_SHIFT 12 32
+			#ZERO <>11
 
-			// Если успешно, то отправляем ответ
-
-			#IF <>6
+			#IF
 				#ZERO
+
+				// Получаем данные до `\r\n\r\n`
+
+				#INCLUDE "recvsep.txt"
+
+				// Если успешно, то отправляем ответ
+
+				#IF
+					#ZERO
