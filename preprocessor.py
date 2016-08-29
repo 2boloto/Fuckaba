@@ -474,37 +474,36 @@ def network_close_command():
 	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель в на четвёртой ячейке из этого списка.
 """
 
-def fill_bytes(data):
-	return "".join(increment(i) + ">" for i in data)
-
-def encode_array(data):
-	return b"\x00\x00" + b"".join(b"\x01" + bytes([i]) for i in data) + b"\x00\x00"
-
 @command
 def database_load_command(path):
-	"Загружает базу данных из файла в память"
+	"Загружает базу данных из файла в память. Файл не должен содержать нулевых байтов"
 
 	path = os.path.join(root, json.loads(path))
 
 	with open(path, "rb") as file:
 		data = file.read()
 
-	result = b""
+	result = ""
 
 	for i in range(0, len(data), 255):
 		chunk = data[i: i + 255]
+		chunk += b"\n" * (255 - len(chunk))
 
 		first = i == 0
 		last = i >= len(data) - 255
 
+		base = list(sorted(chunk))[127]
+
 		result += (
-			encode_array(chunk + b"\n" * (255 - len(chunk))) +
-			(b"\x00" if first else b"\x01") +
-			(b"\x00" if last else b"\x01") +
-			b"\x00\x00\x00\x00"
+			">" + increment(base) + "[-" + ">>+" * 255 + "<<" * 255 + "]<" +
+			">>>" + ">>".join(increment(i - base) for i in chunk) +
+			"[<+<]>[>>]>>" +
+			(">" if first else "+>") +
+			(">" if last else "+>") +
+			">>>>"
 		)
 
-	return fill_bytes(result) + "<<<<"
+	return result + "<<<<"
 
 @command
 def database_go_end_command():
