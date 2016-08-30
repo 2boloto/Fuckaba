@@ -1,153 +1,26 @@
 // Получает из сети первые байты и проверяет их значение.
 
-// >- 19 нулей
+// >- 21 ноль
 
-// <- 1, если байты равны `POST / `, иначе 0
+// <- 0
 // <  1, если байты равны `GET / `, иначе 0
-// <  17 нулей
+// <  1, если байты равны `POST / `, иначе 0
+// <  18 нулей
 
 // Если происходит ошибка соединения или значение у байтов другое, то все нули.
 
-// Получаем первые 6 байтов
-
-#INC 6
+#INC 7
 #INCLUDE "recvall.txt"
 
 #IF
-	// Проверяем, не равен ли массив `GET / `, копируя его содержимое
-
-	#GO 3
-	#ARRAY_GO_END
-	#GO -1
-
-	#COPY
-	#INC -32
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#COPY
-	#INC -47
-	#INC -1 <>-1
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#COPY
-	#INC -32
-	#INC -1 <>-1
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#COPY
-	#INC -84
-	#INC -1 <>-1
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#COPY
-	#INC -69
-	#INC -1 <>-1
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#COPY
-	#INC -71
-	#INC -1 <>-1
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -4 <>-1
-
-	#GO -6
-
-	// Проверяем копию содержимого массива, не равна ли она `POST /`
-
-	#GO 17
-
-	#INC 1 <>-1
-	#INC -47
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#INC -32
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#INC -84
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#INC -83
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#INC -79
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -2 <>-1
-	#GO -2
-	#INC -80
-	#IF
-		#ZERO <>-1
-	#END
-
-	#ADD_TO -4 <>-1
-	#GO -7
-#END
-
-#IF <>2
-	// Если получился `POST /`, то нужно получить ещё один байт и убедиться, что это пробел
-
-	#INC 1 <>-2
-
-	#NETWORK_RECV
-
-	#ELSE
-		#INPUT 1
+	#BLOCK <>2
+		#ARRAY_COMPARE 71 69 84 32 47 32 72
+		#ADD_TO -1
 
 		#ELSE
-			#INC -1 <>-2
-		#END
-
-		#IF
-			#INPUT 1
-			#INC -32
-			#IF
-				#INC -1 <>-2
-			#END
+			#ARRAY_COMPARE 80 79 83 84 32 47 32
 		#END
 	#END
 
-	#IF
-		#INC -1 <>-2
-	#END
+	#ARRAY_CLEAR <>3
 #END

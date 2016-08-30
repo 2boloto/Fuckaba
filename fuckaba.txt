@@ -14,16 +14,16 @@
 
 			#OR_SAVE
 
-			#IF_L <>2
-				#INCLUDE "lib/recvsep.txt"
+			#IF_L
+				#INCLUDE "lib/recvsep.txt" <>3
 
-				#IF_L
-					#IF_L <>-1
+				#IF_L <>3
+					#IF_L <>-2
 						#INCLUDE "get.txt" <>-5
 					#END
 
-					#IF_L <>-2
-						#INCLUDE "post.txt" <>-4
+					#IF_L <>-1
+						#INCLUDE "post.txt" <>-6
 					#END
 				#END
 			#END
