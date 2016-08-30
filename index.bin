@@ -54,6 +54,18 @@ Content-Type: text/html
 	</form>
 </section>
 
+<section class = "form">
+	<h1>Удаление</h1>
+
+	<form method = "post" action = "/a">
+		<p><label>Номер поста: <input name = "number" /></label></p>
+
+		<p><label>Пароль: <input name = "password" /></label></p>
+
+		<p><input type = "submit" value = "Удалить" /></p>
+	</form>
+</section>
+
 <section class = "post">
 	<h1>№ 1</h1>
 

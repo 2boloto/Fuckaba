@@ -223,24 +223,6 @@ def add_command():
 	return "[->+<]"
 
 @command
-def add_to_command(shift):
-	"""
-		Складывает данную ячеку с указанной.
-
-		>- a
-		...
-		>  b
-
-		<- 0
-		...
-		<  a + b
-	"""
-
-	shift = int(shift)
-
-	return "[-" + move(shift) + "+" + move(-shift) + "]"
-
-@command
 def not_command():
 	"""
 		Обаращает значение данной ячейки.
