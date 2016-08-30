@@ -60,7 +60,7 @@ with socket.socket() as s:
 				print("Отправленно байтов: {}".format(sent))
 
 				result += b"\x00" + bytes([sent])
-			except ConnectionResetError:
+			except (ConnectionResetError, BrokenPipeError):
 				print("Соединение прервано")
 
 				result += b"\x01"

@@ -82,6 +82,6 @@
 #END
 
 #INC -4 <>6
-#NOT_SHIFT 6
+#NOT_FROM 6
 
 #ZERO <>5

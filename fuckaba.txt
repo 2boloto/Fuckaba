@@ -1,16 +1,36 @@
-#DATABASE_LOAD "response.bin"
+#DATABASE_LOAD "redirect.bin"
+#GO 4
+#DATABASE_LOAD "index.bin"
 
 #BLOCK <>4
-	#INCLUDE "lib/request-start.txt"
-		#BLOCK <>-5
-			#DATABASE_GO_START
-			#DATABASE_FOREACH
-				#INCLUDE "lib/sendall.txt"
+	#INC 1
+	#WHILE
+		#INC -1
 
-				#UNLESS
-					#DATABASE_GO_END
+		#NETWORK_ACCEPT
+
+		#UNLESS
+			#INCLUDE "lib/route.txt"
+
+			#OR_SAVE
+
+			#IF_L <>2
+				#INCLUDE "lib/recvsep.txt"
+
+				#IF_L
+					#IF_L <>-1
+						#INCLUDE "get.txt" <>-5
+					#END
+
+					#IF_L <>-2
+						#INCLUDE "post.txt" <>-4
+					#END
 				#END
 			#END
+
+			#NETWORK_CLOSE
 		#END
-	#INCLUDE "lib/request-end.txt"
+
+		#INC 1
+	#END
 #END

@@ -63,4 +63,4 @@
 	#END
 #END
 
-#NOT_SHIFT 3
+#NOT_FROM 3

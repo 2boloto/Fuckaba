@@ -163,47 +163,18 @@ def while_block():
 @command
 def copy_command():
 	"""
-		Складывает данную ячейку с соседней и второй справа.
+		Копирует ячейку.
 
 		>- a
-		>  b
-		>  c
+		>  0
+		>  0
 
-		<- a + c
-		<  b + a
+		<- a
+		<  a
 		<  0
-
-		Если b и c - нули, то происходит просто копирование.
 	"""
 
 	return "[->+>+<<]>>[-<<+>>]<<"
-
-@command
-def copy_shift_command(shift):
-	"""
-		Складывает данную ячейку с другой и её соседней
-
-		>- a
-		>  ...
-		>  b
-		>  c
-
-		<- a + c
-		<  ...
-		<  b + a
-		<  0
-
-		Сдвиг может быть положительный или < -1.
-
-		Если b и c - нули, то происходит просто копирование.
-	"""
-
-	shift = int(shift)
-
-	return (
-		"[-" + move(shift) + "+>+<" + move(-shift) + "]" +
-		move(shift) + ">[-<" + move(-shift) + "+" + move(shift) + ">]<" + move(-shift)
-	)
 
 @command
 def swap():
@@ -236,19 +207,17 @@ def add_command():
 	return "[->+<]"
 
 @command
-def add_shift_command(shift):
+def add_to_command(shift):
 	"""
-		Складывает данную ячеку с заданной.
+		Складывает данную ячеку с указанной.
 
 		>- a
-		>  ...
+		...
 		>  b
 
 		<- 0
-		<  ...
+		...
 		<  a + b
-
-		Сдвиг может быть отрицательным, но не нулевым.
 	"""
 
 	shift = int(shift)
@@ -270,7 +239,7 @@ def not_command():
 	return ">+<[[-]>-<]>[-<+>]<"
 
 @command
-def not_shift_command(shift):
+def not_from_command(shift):
 	"""
 		Обаращает значение заданной ячейки.
 
@@ -290,24 +259,25 @@ def not_shift_command(shift):
 	return "+" + move(shift) + "[[-]" + move(-shift) + "-" + move(shift) + "]" + move(-shift)
 
 @command
-def test_shift_command(shift, value):
+def or_save_command():
 	"""
-		Проверяет заданную ячейку на равенство указанному значению.
+		Вычисляет логическое сложение двух булевых ячеек, сохраняя их значения.
 
 		>- a
-		>  ...
 		>  b
+		>  0
+		>  0
 
-		<- a, если равно, иначе 0
-		<  ...
+		<- a
+		<  b
 		<  0
-
-		Сдвиг может быть отрицательный, но не нулевой.
+		<  0
 	"""
 
-	shift = int(shift)
-
-	return move(shift) + increment(-int(value)) + "[[-]" + move(-shift) + "[-]" + move(shift) + "]" + move(-shift)
+	return (
+		"[->>+<<]>>[->+<<<+>>]<<"
+		">[->+<]>[-<+>>+<]>[[-]<+>]<<<"
+	)
 
 # Массив
 
@@ -364,18 +334,6 @@ def array_pop_command():
 	"Удаляет элемент из массива. Указатель должен быть на конце"
 
 	return "<<-"
-
-@command
-def array_shift_command():
-	"Добавляет элемент в массив. Указатель должен быть на начале"
-
-	return "+<<"
-
-@command
-def array_unshift_command():
-	"Удаляет элемент из массива. Указатель должен быть на начале"
-
-	return ">>-"
 
 @command
 def array_clear_command():
@@ -471,12 +429,12 @@ def network_close_command():
 	>  0
 	>  0
 
-	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель в на четвёртой ячейке из этого списка.
+	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель на четвёртой ячейке из этого списка.
 """
 
 @command
 def database_load_command(path):
-	"Загружает базу данных из файла в память. Файл не должен содержать нулевых байтов"
+	"Загружает базу данных из файла в память"
 
 	path = os.path.join(root, json.loads(path))
 
@@ -484,6 +442,9 @@ def database_load_command(path):
 		data = file.read()
 
 	result = ""
+
+	def difference(count):
+		return count if count <= 128 else -(256 - count)
 
 	for i in range(0, len(data), 255):
 		chunk = data[i: i + 255]
@@ -495,15 +456,27 @@ def database_load_command(path):
 		base = list(sorted(chunk))[127]
 
 		result += (
-			">" + increment(base) + "[-" + ">>+" * 255 + "<<" * 255 + "]<" +
-			">>>" + ">>".join(increment(i - base) for i in chunk) +
-			"[<+<]>[>>]>>" +
+			">>" + "+>>" * 255 + ">" +
+			increment(base) + "[-<<<[>+<<<]>>[>>]>]" +
+			"<<" + "<<".join(increment(i - base) for i in reversed(chunk)) + "<[>>]>>" +
 			(">" if first else "+>") +
 			(">" if last else "+>") +
 			">>>>"
 		)
 
 	return result + "<<<<"
+
+@command
+def database_go_next_command():
+	"Переходит к следующему чанку"
+
+	return ">>>>" + array_go_end_command() + ">>>>"
+
+@command
+def database_go_back_command():
+	"Переходит к предыдущему чанку"
+
+	return "<<<<" + array_go_start_command() + "<<<<"
 
 @command
 def database_go_end_command():
