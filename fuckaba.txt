@@ -1,41 +1,42 @@
-#DATABASE_LOAD "redirect.bin"
-#DATABASE_LOAD "index.bin"
+#BLOCK <>30
+	#DATABASE_LOAD "index.bin"
+	#DATABASE_LOAD "redirect.bin"
+	#DATABASE_GO_START
+	#DATABASE_GO_BACK
+	#DATABASE_GO_START
+	#DATABASE_GO_BACK
+#END
 
-#BLOCK <>4
-	#INC 1
-	#WHILE
-		#INC -1
+#FOREVER
+	#NETWORK_ACCEPT
 
-		#NETWORK_ACCEPT
+	#UNLESS
+		#INCLUDE "lib/route.txt"
 
-		#UNLESS
-			#INCLUDE "lib/route.txt"
+		#IF_L
+			#INCLUDE "lib/recvsep.txt" <>4
 
-			#IF_L
-				#INCLUDE "lib/recvsep.txt" <>4
-
-				#IF_L <>4
-					#ELSE <>-1
-						#IF_L <>-2
-							#INCLUDE "post.txt" <>-5
-						#END
-
-						#IF_L <>-1
-							#INCLUDE "admin.txt" <>-6
-						#END
-
-						#INCLUDE "redirect.txt" <>-7
+			#IF_L <>4
+				#ELSE <>-1
+					#IF_L <>-2
+						#INCLUDE "post.txt" <>-1
 					#END
 
 					#IF_L <>-1
-						#INCLUDE "index.txt" <>-7
+						#INCLUDE "admin.txt" <>-2
+					#END
+
+					#IF <>-3
+						#INCLUDE "redirect.txt"
 					#END
 				#END
-			#END
 
-			#NETWORK_CLOSE
+				#IF_L <>-1
+					#INCLUDE "index.txt" <>-3
+				#END
+			#END
 		#END
 
-		#INC 1
+		#NETWORK_CLOSE
 	#END
 #END

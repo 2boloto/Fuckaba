@@ -1,5 +1,7 @@
 // Отправляет чанк базы данных в сеть, повторяя вызов `send`, если тот возвращает не всё.
 
+// >  0
+// >  0
 // >  массив
 // >  x - служебные данные
 // >  y
@@ -10,6 +12,8 @@
 // >  0
 // >  0
 
+// <  0
+// <  0
 // <  массив
 // <  x
 // <  y
@@ -45,26 +49,36 @@
 			#INC 1 <>1
 		#END
 
-		#FOR
-			#INC -1 <>-1
+		#SUB_TO -1
+		#COPY_TO -8 <>-1
 
-			#BLOCK <>-7
-				#ARRAY_GO_START
-				#GO 2
-				#INC -1
-				#ARRAY_GO_END
+		#BLOCK <>-7
+			#ARRAY_GO_START
+			#INC 1
+			#ARRAY_GO_END
+
+			#GO -2
+			#INC -1
+
+			#WHILE
+				#ADD_TO -2
+				#INC 1
+				#GO -2
+				#INC -2
 			#END
+
+			#ARRAY_GO_END
 		#END
 	#END
 #END
 
-#INC 255
-#FOR
-	#BLOCK <>-6
-		#ARRAY_GO_START
-		#INC 1
-		#ARRAY_GO_END
-	#END
+#BLOCK <>-6
+	#ARRAY_GO_START
+	#INC 1
+	#ARRAY_GO_START
+	#GO 2
+	#INC -1
+	#ARRAY_GO_END
 #END
 
 #NOT_FROM 3

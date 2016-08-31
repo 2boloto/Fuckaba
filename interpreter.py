@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
-# Интерпретатор работает в дебажном режиме: по команде `~` дампит память в стандартный поток ошибок
+# Интерпретатор работает в дебажном режиме: по команде `~` дампит память в стандартный поток ошибок, команда `?` завершает программу
 
 maximum_code_length = 2 ** 20
 memory_length = 2 ** 20
 
-from sys import argv, stdin, stdout
+from sys import argv, stdin, stdout, stderr
+import binascii
 
 with open(argv[1]) as file:
 	code = file.read(maximum_code_length)
@@ -62,17 +63,16 @@ while i < len(code):
 			pointer += 1
 			last_pointer = max(last_pointer, pointer)
 		elif code[i] == "~":
-			import sys
-			import binascii
-
 			dump = binascii.hexlify(memory[: last_pointer + 1]).decode()
 
-			sys.stderr.write("Память (указатель: {}, инструкция: {}): {}\n".format(
+			stderr.write("Память (указатель: {}, инструкция: {}): {}\n".format(
 				pointer,
 				i,
 				" ".join(dump[j: j + 2] + ("<" if pointer == j // 2 else "") for j in range(0, len(dump), 2))
 			))
 
-			sys.stderr.flush()
+			stderr.flush()
+		elif code[i] == "?":
+			i = len(code) - 1
 
 		i += 1

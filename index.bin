@@ -55,14 +55,14 @@ Content-Type: text/html
 </section>
 
 <section class = "form">
-	<h1>Удаление</h1>
+	<h1>Админка</h1>
 
 	<form method = "post" action = "/a">
+		<p><label>Пароль (8 символов: цифры, английские буквы): <input name = "p" /></label></p>
+
 		<p><label>Номер поста: <input name = "n" /></label></p>
 
-		<p><label>Пароль: <input name = "p" /></label></p>
-
-		<p><input type = "submit" value = "Удалить" /></p>
+		<p><input type = "submit" value = "Удалить" /> Первая отправка формы установит пароль.</p>
 	</form>
 </section>
 

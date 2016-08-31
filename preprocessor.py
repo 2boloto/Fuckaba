@@ -158,6 +158,12 @@ def while_block():
 
 	return "[", "]"
 
+@block
+def forever_block():
+	"Бесконечный цикл"
+
+	return "+[-", "+]"
+
 # Команды с несколькими вводами
 
 @command
@@ -166,11 +172,11 @@ def copy_command():
 		Копирует ячейку.
 
 		>- a
-		>  0
+		>  b
 		>  0
 
 		<- a
-		<  a
+		<  b + a
 		<  0
 	"""
 
@@ -183,11 +189,11 @@ def copy_back_command():
 
 		>  0
 		>- a
-		>  0
+		>  b
 
 		<  0
 		<- a
-		<  a
+		<  b + a
 	"""
 
 	return "[-<+>>+<]<[->+<]>"
@@ -197,12 +203,12 @@ def copy_from_command(shift):
 	"""
 		Копирует указанную ячейку.
 
-		>- 0
+		>- b
 		>  0
 		>  ...
 		>  a
 
-		<- a
+		<- b + a
 		<  0
 		<  ...
 		<  a
@@ -211,9 +217,29 @@ def copy_from_command(shift):
 	shift = int(shift)
 
 	return (
-		move(shift) + "[-" + move(-shift) + ">+<" + move(shift) + "]" + move(-shift) +
-		">[-<+" + move(shift) + "+" + move(-shift) + ">]<"
+		move(shift) + "[-" + move(-shift) + "+>+<" + move(shift) + "]" + move(-shift) +
+		">[-<" + move(shift) + "+" + move(-shift) + ">]<"
 	)
+
+@command
+def copy_to_command(shift):
+	"""
+		Копирует в указанную ячейку.
+
+		>- a
+		>  0
+		>  ...
+		>  b
+
+		<- a
+		<  0
+		<  ...
+		<  b + a
+	"""
+
+	shift = int(shift)
+
+	return "[->+<" + move(shift) + "+" + move(-shift) + "]>[-<+>]<"
 
 @command
 def swap():
@@ -244,6 +270,56 @@ def add_command():
 	"""
 
 	return "[->+<]"
+
+@command
+def add_to_command(shift):
+	"""
+		Складывает данную ячеку с указанной.
+
+		>- a
+		>  ...
+		>  b
+
+		<- 0
+		<  ...
+		<  a + b
+	"""
+
+	shift = int(shift)
+
+	return "[-" + move(shift) + "+" + move(-shift) + "]"
+
+@command
+def sub_command():
+	"""
+		Отнимает данную ячеку от соседней.
+
+		>- a
+		>  b
+
+		<- 0
+		<  b - a
+	"""
+
+	return "[->-<]"
+
+@command
+def sub_to_command(shift):
+	"""
+		Отнимает данную ячеку от указанной.
+
+		>- a
+		>  ...
+		>  b
+
+		<- 0
+		<  ...
+		<  b - a
+	"""
+
+	shift = int(shift)
+
+	return "[-" + move(shift) + "-" + move(-shift) + "]"
 
 @command
 def not_command():
@@ -473,12 +549,14 @@ def network_close_command():
 	>  0
 	>  0
 
+	Перед базой данныз должно быть 4 нуля.
+
 	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель на четвёртой ячейке из этого списка.
 """
 
 @command
 def database_load_command(path):
-	"Загружает базу данных из файла в память, добавляет 4 нуля спереди"
+	"Загружает базу данных из файла в память"
 
 	path = os.path.join(root, json.loads(path))
 
@@ -655,7 +733,7 @@ def format(code):
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.~":
+		elif i in "[],.~?":
 			result += reorder(fragment) + i
 			fragment = ""
 
