@@ -44,11 +44,11 @@ Content-Type: text/html
 	<form method = "post">
 		<p><label for = "message">Сообщение:</label></p>
 
-		<p><textarea id = "message" name = "message"></textarea></p>
+		<p><textarea id = "message" name = "m"></textarea></p>
 
 		<p><label for = "image">Картинка в Бейс-64:</label></p>
 
-		<p><textarea id = "image" name = "image"></textarea></p>
+		<p><textarea id = "image" name = "i"></textarea></p>
 
 		<p><input type = "submit" value = "Отправить" /></p>
 	</form>
@@ -58,9 +58,9 @@ Content-Type: text/html
 	<h1>Удаление</h1>
 
 	<form method = "post" action = "/a">
-		<p><label>Номер поста: <input name = "number" /></label></p>
+		<p><label>Номер поста: <input name = "n" /></label></p>
 
-		<p><label>Пароль: <input name = "password" /></label></p>
+		<p><label>Пароль: <input name = "p" /></label></p>
 
 		<p><input type = "submit" value = "Удалить" /></p>
 	</form>

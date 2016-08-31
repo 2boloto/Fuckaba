@@ -193,6 +193,29 @@ def copy_back_command():
 	return "[-<+>>+<]<[->+<]>"
 
 @command
+def copy_from_command(shift):
+	"""
+		Копирует указанную ячейку.
+
+		>- 0
+		>  0
+		>  ...
+		>  a
+
+		<- a
+		<  0
+		<  ...
+		<  a
+	"""
+
+	shift = int(shift)
+
+	return (
+		move(shift) + "[-" + move(-shift) + ">+<" + move(shift) + "]" + move(-shift) +
+		">[-<+" + move(shift) + "+" + move(-shift) + ">]<"
+	)
+
+@command
 def swap():
 	"""
 		Меняет местами две ячейки.
@@ -248,8 +271,6 @@ def not_from_command(shift):
 		<- !a
 		<  ...
 		<  0
-
-		Сдвиг может быть отрицательным, но не нулевым.
 	"""
 
 	shift = int(shift)
@@ -446,8 +467,7 @@ def network_close_command():
 	>  0, если это первый массив, иначе 1
 	>  0, если это последний массив, иначе 1
 	>  0, если этот массив не надо отправлять в сеть, иначе 1
-	>  младший байт номера поста, который начинается в этом массиве, либо ноль
-	>  старший байт, либо ноль
+	>  номер поста, который начинается в этом массиве, либо ноль
 	>- 0
 	>  0
 	>  0
@@ -458,14 +478,14 @@ def network_close_command():
 
 @command
 def database_load_command(path):
-	"Загружает базу данных из файла в память"
+	"Загружает базу данных из файла в память, добавляет 4 нуля спереди"
 
 	path = os.path.join(root, json.loads(path))
 
 	with open(path, "rb") as file:
 		data = file.read()
 
-	result = ""
+	result = ">>>>"
 
 	def difference(count):
 		return count if count <= 128 else -(256 - count)
@@ -485,7 +505,7 @@ def database_load_command(path):
 			"<<" + "<<".join(increment(i - base) for i in reversed(chunk)) + "<[>>]>>" +
 			(">" if first else "+>") +
 			(">" if last else "+>") +
-			">>>>"
+			"+>>>>>>"
 		)
 
 	return result + "<<<<"
@@ -494,31 +514,31 @@ def database_load_command(path):
 def database_go_next_command():
 	"Переходит к следующему чанку"
 
-	return ">>>>" + array_go_end_command() + ">>>>"
+	return ">>>>" + array_go_end_command() + ">>>>>>"
 
 @command
 def database_go_back_command():
 	"Переходит к предыдущему чанку"
 
-	return "<<<<" + array_go_start_command() + "<<<<"
+	return "<<<<<<" + array_go_start_command() + "<<<<"
 
 @command
 def database_go_end_command():
 	"Переходит к последнему чанку"
 
-	return "<[>>>>>" + array_go_end_command() + ">>>]>"
+	return "<<<[>>>" + database_go_next_command() + "<<<]>>>"
 
 @command
 def database_go_start_command():
 	"Переходит к первому чанку"
 
-	return "<<[<<" + array_go_start_command() + "<<<<<<]>>"
+	return "<<<<[>>>>" + database_go_back_command() + "<<<<]>>>>"
 
 @block
 def database_foreach_block():
 	"Цикл по каждому чанку. Указатель остаётся на последнем"
 
-	return "+[-", "<[>>>>>" + array_go_end_command() + ">>>[->+<]>>+<<]>[-<+>]>[-<+>]<]"
+	return "+[-", "<<<[>>>" + database_go_next_command() + "<<< >>>+<<< [->>>>+<<<<]]>>> >[-<<<<+>>>>]<]"
 
 # Препроцессор
 

@@ -3,6 +3,8 @@
 // >  массив
 // >  x - служебные данные
 // >  y
+// >  z
+// >  w
 // >- 0
 // >  0
 // >  0
@@ -11,6 +13,8 @@
 // <  массив
 // <  x
 // <  y
+// <  z
+// <  w
 // <- 1, если успешно, иначе 0
 // <  0
 // <  0
@@ -23,7 +27,7 @@
 	#BLOCK <>1
 		#NETWORK_SEND
 
-		#BLOCK <>-5
+		#BLOCK <>-7
 			#ARRAY_GO_START
 			#ARRAY_FOREACH
 				#OUTPUT 1 <>1
@@ -44,7 +48,7 @@
 		#FOR
 			#INC -1 <>-1
 
-			#BLOCK <>-5
+			#BLOCK <>-7
 				#ARRAY_GO_START
 				#GO 2
 				#INC -1
@@ -56,7 +60,7 @@
 
 #INC 255
 #FOR
-	#BLOCK <>-4
+	#BLOCK <>-6
 		#ARRAY_GO_START
 		#INC 1
 		#ARRAY_GO_END

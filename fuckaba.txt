@@ -1,5 +1,4 @@
 #DATABASE_LOAD "redirect.bin"
-#GO 4
 #DATABASE_LOAD "index.bin"
 
 #BLOCK <>4

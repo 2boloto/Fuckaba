@@ -1,8 +1,12 @@
 #DATABASE_GO_START
 #DATABASE_FOREACH
-	#INCLUDE "lib/sendall.txt"
+	#COPY_FROM -2
 
-	#UNLESS
-		#DATABASE_GO_END
+	#IF_L
+		#INCLUDE "lib/sendall.txt"
+
+		#UNLESS
+			#DATABASE_GO_END
+		#END
 	#END
 #END
