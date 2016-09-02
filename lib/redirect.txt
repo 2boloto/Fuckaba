@@ -1,0 +1,21 @@
+// Отправляет в сеть перенаправление на главную страницу.
+
+// >- 30 нулей
+// >  базы данных
+
+// <- 30 нулей
+// <  базы данных
+
+#BLOCK <>30
+	#DATABASE_GO_NEXT
+	#DATABASE_GO_END
+	#DATABASE_GO_NEXT
+
+	#INCLUDE "send-database.txt"
+	#ZERO <>1
+
+	#DATABASE_GO_START
+	#DATABASE_GO_BACK
+	#DATABASE_GO_START
+	#DATABASE_GO_BACK
+#END

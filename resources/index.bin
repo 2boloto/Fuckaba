@@ -31,8 +31,8 @@ Content-Type: text/html
 	}
 
 	textarea {
-		min-width: 500px;
-		min-height: 200px;
+		width: 500px;
+		height: 200px;
 	}
 </style>
 
@@ -50,7 +50,7 @@ Content-Type: text/html
 
 		<p><textarea id = "image" name = "i"></textarea></p>
 
-		<p><input type = "submit" value = "Отправить" /></p>
+		<p><input type = "submit" value = "Отправить" /> Доска сможет принять не более 9999 постов.</p>
 	</form>
 </section>
 

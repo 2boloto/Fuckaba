@@ -1,22 +1,33 @@
 #!/usr/bin/python3
 
 # В комментах к командам символом `>` обозначается состояние памяти перед вызовом, а `<` - после
-# Дефисом после треугольной скобки обозначего положение указателя
+# Дефисом после треугольной скобки обозначено положение указателя
 
 import os.path
-import json
 
+names = {"END"}
 commands = {}
+blocks = {}
 
 def command(function):
-	commands[function.__name__[: -8].upper()] = function
+	name = function.__name__[: -8].upper()
+
+	if name in names:
+		raise Exception("Имя занято")
+
+	commands[name] = function
+	names.add(name)
 
 	return function
 
-blocks = {}
-
 def block(function):
-	blocks[function.__name__[: -6].upper()] = function
+	name = function.__name__[: -6].upper()
+
+	if name in names:
+		raise Exception("Имя занято")
+
+	blocks[name] = function
+	names.add(name)
 
 	return function
 
@@ -34,33 +45,23 @@ def increment(count):
 	else:
 		return "-" * -count
 
-def repeat(instruction, count):
-	if count > 0:
-		result = ">".join(instruction * count)
-	else:
-		result = "<".join(instruction * -count)
-
-	result += move(-(count - 1)) if count != 0 else ""
-
-	return result
-
 @command
 def go_command(count):
 	"Переходит на задданой число ячеек влево или вправо"
 
-	return move(int(count))
+	return move(count)
 
 @command
-def input_command(count):
-	"Вводит заданное число байтов, заполняя ячейки, начиная с текущей. Если число отрицательное, заполняет влево"
+def input_command():
+	"Вводит байт"
 
-	return repeat(",", int(count))
+	return ","
 
 @command
-def output_command(count):
-	"Выводит заданное число байтов из ячеек, начиная с текущей. Если число отрицательное, читает влево"
+def output_command():
+	"Выводит байт"
 
-	return repeat(".", int(count))
+	return "."
 
 @command
 def zero_command():
@@ -72,7 +73,7 @@ def zero_command():
 def inc_command(count):
 	"Увеличивает или уменьшает данную ячеку на заданное число"
 
-	return increment(int(count))
+	return increment(count)
 
 @command
 def include_command(path):
@@ -80,7 +81,7 @@ def include_command(path):
 
 	global root
 
-	path = os.path.join(root, json.loads(path))
+	path = os.path.join(root, path)
 
 	with open(path) as file:
 		code = file.read()
@@ -100,15 +101,119 @@ def block_block():
 
 @block
 def if_block():
-	"Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется"
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
+
+		>- a
+
+		<- a
+
+		>- неважно
+
+		<- 0
+	"""
 
 	return "[", "[-]]"
 
 @block
+def bool_if_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
+
+		Подразумевается, что она может принимать только два значения: 0 и 1.
+
+		>- a
+
+		<- 1
+
+		>- 1
+
+		<- 0
+	"""
+
+	return "[", "-]"
+
+@block
 def if_l_block():
-	"Условный блок, выполняется, если данная ячейка - не нуль. Перед выполненем она зануляется"
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполненем она зануляется.
+
+		>- a
+
+		<- 0
+
+		>- 0
+
+		<- 0
+	"""
 
 	return "[[-]", "]"
+
+@block
+def bool_if_l_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполнения она зануляется.
+
+		Подразумевается, что она может принимать только два значения: 0 и 1.
+
+		>- a
+
+		<- 0
+
+		>- 0
+
+		<- 0
+	"""
+
+	return "[-", "]"
+
+@block
+def if_save_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется.
+
+		>- a
+		>  0
+		>  0
+
+		<- a
+		<  0
+		<  0
+
+		>- x - неважно
+		>  0
+		>  0
+
+		<- a, если не выполнился, иначе x
+		<  0
+		<  0
+	"""
+
+	return "[", ">>+<]>[-<]<"
+
+@block
+def if_save_flag_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется. Сохраняет флаг во второй справа ячейке.
+
+		>- a
+		>  0
+		>  0
+
+		<- a
+		<  0
+		<  0
+
+		>- x - неважно
+		>  0
+		>  0
+
+		<- a, если не выполнился, иначе x
+		<  0
+		<  1, если выполнился, иначе 0
+	"""
+
+	return "[", ">>+<]>[<]<"
 
 @block
 def unless_block():
@@ -120,259 +225,305 @@ def unless_block():
 
 		<- 0
 		<  0
+
+		>- x - неважно
+		>  0
+
+		<- 0, если не выполнился, иначе x
+		<  0
 	"""
 
-	return ">+<[[-]>-<]>[-<+>]<[-", "]"
+	return "[[-]>+<]>-[+<", ">]<"
 
 @block
-def else_block():
+def bool_unless_block():
 	"""
-		Условный блок, выполняется, если данная ячейка - нуль. Если нет, её значение сохраняется.
+		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
+
+		Подразумевается, что она может принимать только два значения: 0 и 1.
+
+		>- a
+
+		<- 0
+
+		>- 0
+
+		<- 0
+	"""
+
+	return "-[+", "]"
+
+@block
+def unless_save_block():
+	"""
+		Условный блок, выполняется, если данная ячейка - нуль. Её значение сохраняется.
 
 		>- a
 		>  0
 		>  0
 
-		<- a
+		<- 0
 		<  0
+		<  0
+
+		>- x - неважно
+		>  y - неважно
+		>  0
+
+		<- a, если не выолнился, иначе x
+		<  0, если не выполнился, иначе y
 		<  0
 	"""
 
-	return ">>+<<[->+>[-]<<]>[-<+>]>[[-]<<", ">>]<<"
+	return "[>>+<]>[<]>-[+<<", ">>]<<"
 
 @block
 def for_block():
-	"Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1"
+	"""
+		Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1.
+
+		>- a
+
+		<- a
+
+		>- x - неважно
+
+		<- 0
+	"""
 
 	return "[", "-]"
 
 @block
 def for_l_block():
-	"Цикл до тех пор, пока данная ячейка не станет нулём. Перед каждой итерацией она уменьшается на 1"
+	"""
+		Цикл до тех пор, пока данная ячейка не станет нулём. Перед каждой итерацией она уменьшается на 1.
+
+		>- a
+
+		<- a - 1, если первая итерация, иначе x - 1
+
+		>- x - неважно
+
+		<- 0
+	"""
 
 	return "[-", "]"
 
 @block
 def while_block():
-	"Цикл до тех пор, пока данная ячейка не станет нулём"
+	"""
+		Цикл до тех пор, пока данная ячейка не станет нулём.
+
+		>- a
+
+		<- a, если первая итерация, иначе x
+
+		>- x - неважно
+
+		<- 0
+	"""
 
 	return "[", "]"
 
 @block
 def forever_block():
-	"Бесконечный цикл"
+	"""
+		Бесконечный цикл.
+
+		>- 0
+
+		<- 0
+
+		>- 0
+
+		<- 0
+	"""
 
 	return "+[-", "+]"
 
 # Команды с несколькими вводами
 
 @command
-def copy_command():
+def add_to_command(destination):
 	"""
-		Копирует ячейку.
+		Складывает данную ячейку с указанной.
 
 		>- a
-		>  b
-		>  0
-
-		<- a
-		<  b + a
-		<  0
-	"""
-
-	return "[->+>+<<]>>[-<<+>>]<<"
-
-@command
-def copy_back_command():
-	"""
-		Копирует ячейку, используя место слева.
-
-		>  0
-		>- a
-		>  b
-
-		<  0
-		<- a
-		<  b + a
-	"""
-
-	return "[-<+>>+<]<[->+<]>"
-
-@command
-def copy_from_command(shift):
-	"""
-		Копирует указанную ячейку.
-
-		>- b
-		>  0
 		>  ...
-		>  a
+		>  b
 
-		<- b + a
-		<  0
+		<- 0
 		<  ...
-		<  a
+		<  b + a
+
+		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	shift = int(shift)
+	return "[-" + move(destination) + "+" + move(-destination) + "]"
+
+@command
+def sub_to_command(destination):
+	"""
+		Отнимает данную ячейку от указанной.
+
+		>- a
+		>  ...
+		>  b
+
+		<- 0
+		<  ...
+		<  b - a
+
+		Сдвиг может быть любым, но не нулевым.
+	"""
+
+	return "[-" + move(destination) + "-" + move(-destination) + "]"
+
+@command
+def add_save_to_command(destination, buffer = 1):
+	"""
+		Складывает с указанной ячейкой данную, сохраняя её значение с помощью временной.
+
+		>- a
+		>  ...
+		>  b
+		>  ...
+		>  0
+
+		<- a
+		<  ...
+		<  b + a
+		<  ...
+		<  0
+
+		Сдвиги не должны быть нулевыми или одинаковыми.
+	"""
 
 	return (
-		move(shift) + "[-" + move(-shift) + "+>+<" + move(shift) + "]" + move(-shift) +
-		">[-<" + move(shift) + "+" + move(-shift) + ">]<"
+		"[-" + move(buffer) + "+" + move(-buffer + destination) + "+" + move(-destination) +"]" +
+		move(buffer) + "[-" + move(-buffer) + "+" + move(buffer) + "]" + move(-buffer)
 	)
 
 @command
-def copy_to_command(shift):
+def sub_save_to_command(destination, buffer = 1):
 	"""
-		Копирует в указанную ячейку.
+		Отнимает от указанной ячейки данную, сохраняя её значение с помощью временной.
 
 		>- a
-		>  0
 		>  ...
 		>  b
+		>  ...
+		>  0
 
 		<- a
-		<  0
-		<  ...
-		<  b + a
-	"""
-
-	shift = int(shift)
-
-	return "[->+<" + move(shift) + "+" + move(-shift) + "]>[-<+>]<"
-
-@command
-def swap():
-	"""
-		Меняет местами две ячейки.
-
-		>- a
-		>  b
-		>  c
-
-		<- b
-		<  a + c
-		<  0
-	"""
-
-	return "[->>+<<]>[-<+>]>[-<+>]<<"
-
-@command
-def add_command():
-	"""
-		Складывает данную ячеку с соседней.
-
-		>- a
-		>  b
-
-		<- 0
-		<  a + b
-	"""
-
-	return "[->+<]"
-
-@command
-def add_to_command(shift):
-	"""
-		Складывает данную ячеку с указанной.
-
-		>- a
-		>  ...
-		>  b
-
-		<- 0
-		<  ...
-		<  a + b
-	"""
-
-	shift = int(shift)
-
-	return "[-" + move(shift) + "+" + move(-shift) + "]"
-
-@command
-def sub_command():
-	"""
-		Отнимает данную ячеку от соседней.
-
-		>- a
-		>  b
-
-		<- 0
-		<  b - a
-	"""
-
-	return "[->-<]"
-
-@command
-def sub_to_command(shift):
-	"""
-		Отнимает данную ячеку от указанной.
-
-		>- a
-		>  ...
-		>  b
-
-		<- 0
 		<  ...
 		<  b - a
+		<  ...
+		<  0
+
+		Сдвиги не должны быть нулевыми или одинаковыми.
 	"""
 
-	shift = int(shift)
-
-	return "[-" + move(shift) + "-" + move(-shift) + "]"
+	return (
+		"[-" + move(buffer) + "+" + move(-buffer + destination) + "-" + move(-destination) +"]" +
+		move(buffer) + "[-" + move(-buffer) + "+" + move(buffer) + "]" + move(-buffer)
+	)
 
 @command
-def not_command():
+def not_to_command(destination):
 	"""
 		Обаращает значение данной ячейки.
 
-		>- a
-		>  0
-
-		<- !a
-		<  0
-	"""
-
-	return ">+<[[-]>-<]>[-<+>]<"
-
-@command
-def not_from_command(shift):
-	"""
-		Обаращает значение заданной ячейки.
-
-		>- 0
+		>  a
 		>  ...
-		>  a
+		>- 0
 
-		<- !a
-		<  ...
 		<  0
+		<  ...
+		<- !a
+
+		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	shift = int(shift)
-
-	return "+" + move(shift) + "[[-]" + move(-shift) + "-" + move(shift) + "]" + move(-shift)
+	return move(destination) + "+" + move(-destination) + "[[-]" + move(destination) + "-" + move(-destination) + "]"
 
 @command
-def or_save_command():
+def bool_not_to_command(destination):
 	"""
-		Вычисляет логическое сложение двух ячеек, сохраняя их значения.
+		Обаращает значение данной ячейки.
+
+		Подразумевается, что она может принимать только два значения: 0 и 1.
+
+		>  a
+		>  ...
+		>- 0
+
+		<  0
+		<  ...
+		<- !a
+
+		Сдвиг может быть любым, но не нулевым.
+	"""
+
+	return move(destination) + "+" + move(-destination) + "[-" + move(destination) + "-" + move(-destination) + "]"
+
+# Сетевые команды
+
+@command
+def network_accept_command():
+	"""
+		Принимает соединение.
 
 		>- 0
-		>  a
-		>  b
+
+		<- 0, если успешно, иначе 1
+	"""
+
+	return ".,"
+
+@command
+def network_recv_command():
+	"""
+		Принимает данные.
+
+		>- l - требуемая длина данных
 		>  0
+
+		<- 0, если успешно, иначе 1
+		<  0
+
+		Если вызов успешен, после него надо прочитать 1 байт длины и сами данные. Если длина будет 0, то соединение больше ничего не пошлёт.
+	"""
+
+	return ">+.-<.,"
+
+@command
+def network_send_command():
+	"""
+		Отправляет данные.
+
+		>- l - длина
+		>  0
+
+		<- l
+		<  0
+
+		После этого надо вывести l байтов и прочитать 1 байт результата: 0, если успешно, иначе 1. В случае успеха надо прочитать ещё один байт - длину отправленного, она может быть меньше l.
+	"""
+
+	return ">++.--<."
+
+@command
+def network_close_command():
+	"""
+		Закрывает соединение.
+
+		>- 0
 
 		<- 0
-		<  a
-		<  b
-		<  0
 	"""
 
-	return (
-		">[-<[-]+>>>+<<]>>[-<<+>>]" +
-		"<[-<<[-]+>>>+<]>[-<+>]<<<"
-	)
+	return "+++.---"
 
 # Массив
 
@@ -419,16 +570,15 @@ def array_go_start_command():
 	return "<<[<<]"
 
 @command
-def array_append_command():
-	"Добавляет элемент в массив. Указатель должен быть на конце"
+def array_set_command(string):
+	"Создаёт массив из указанных байтов. Указатель остаётся на начале"
 
-	return "+>>"
+	base = list(sorted(string))[len(string) // 2]
 
-@command
-def array_pop_command():
-	"Удаляет элемент из массива. Указатель должен быть на конце"
-
-	return "<<-"
+	return (
+		">>" + "+>>" * len(string) + ">" + increment(base) + "[-<<<[>+<<<]>>[>>]>]" +
+		"<<" + "<<".join(increment(i - base) for i in reversed(string)) + "<<<"
+	)
 
 @command
 def array_clear_command():
@@ -437,7 +587,7 @@ def array_clear_command():
 	return ">>[>>]<<[->[-]<<<]"
 
 @command
-def array_compare_command(*string):
+def array_compare_command(string):
 	"""
 		Сравнивает массив с константной строкой, оставляя массив неизменным. Его длина должна соответствовать длине константы и ограничена 255 байтами.
 
@@ -449,14 +599,10 @@ def array_compare_command(*string):
 	"""
 
 	return (
-		">>>-" + "".join(
-			(
-				">" + copy_back_command() + "<+>>" +
-				increment(-int(string[i]) - (i < len(string) - 1)) +
-				"[[-]<<->>]"
-			) for i in range(len(string))
-		) + "-" + "<<[-<<+>>]>>+<<" * len(string) +
-		"+<<<+>" + increment(-len(string)) + "[[-]<->]<"
+		">>>-" + "".join((
+				">[-<+>>+<]<[->+<]+>>" + increment(-string[i] - (i < len(string) - 1)) + "[[-]<<->>]"
+		) for i in range(len(string))) +
+		"-" + "<<[-<<+>>]>>+<<" * len(string) + "+<<<+>" + increment(-len(string)) + "[[-]<->]<"
 	)
 
 @block
@@ -477,64 +623,6 @@ def array_foreach_block():
 
 	return ">>[", ">>]"
 
-# Сетевые команды
-
-@command
-def network_accept_command():
-	"""
-		Принимает соединение.
-
-		>- 0
-
-		<- 0, если успешно, иначе 1
-	"""
-
-	return ".,"
-
-@command
-def network_recv_command():
-	"""
-		Принимает данные.
-
-		>- l - требуемая длина данных
-		>  0
-
-		<- 0, если успешно, иначе 1
-		<  0
-
-		Если вызов успешен, после него надо прочитать 1 байт длины сами данные. Если длина будет 0, то соединение больше ничего не пошлёт.
-	"""
-
-	return ">+.-<.,"
-
-@command
-def network_send_command():
-	"""
-		Отправляет данные.
-
-		>- l - длина
-		>  0
-
-		<- l
-		<  0
-
-		После этого надо вывести l байтов и прочитать 1 байт результата: 0, если успешно, иначе 1. В случае успеха надо прочитать ещё один байт - длину отправленного, она может быть меньше l.
-	"""
-
-	return ">++.--<."
-
-@command
-def network_close_command():
-	"""
-		Закрывает соединение.
-
-		>- 0
-
-		<- 0
-	"""
-
-	return "+++.---"
-
 # База данных
 
 """
@@ -542,8 +630,11 @@ def network_close_command():
 
 	>  0, если это первый массив, иначе 1
 	>  0, если это последний массив, иначе 1
+	>  x1 - номер поста, который начинается в этом массиве, либо ноль. Число хранится, как 4 байта, по одной десятичной цифре в каждом, старшая спереди. Цифры хранятся в виде значений от 0 до 9
+	>  x2
+	>  x3
+	>  x4
 	>  0, если этот массив не надо отправлять в сеть, иначе 1
-	>  номер поста, который начинается в этом массиве, либо ноль
 	>- 0
 	>  0
 	>  0
@@ -558,7 +649,7 @@ def network_close_command():
 def database_load_command(path):
 	"Загружает базу данных из файла в память"
 
-	path = os.path.join(root, json.loads(path))
+	path = os.path.join(root, path)
 
 	with open(path, "rb") as file:
 		data = file.read()
@@ -575,16 +666,7 @@ def database_load_command(path):
 		first = i == 0
 		last = i >= len(data) - 255
 
-		base = list(sorted(chunk))[127]
-
-		result += (
-			">>" + "+>>" * 255 + ">" +
-			increment(base) + "[-<<<[>+<<<]>>[>>]>]" +
-			"<<" + "<<".join(increment(i - base) for i in reversed(chunk)) + "<[>>]>>" +
-			(">" if first else "+>") +
-			(">" if last else "+>") +
-			"+>>>>>>"
-		)
+		result += array_set_command(chunk) + ">>[>>]>>" + (">" if first else "+>") + (">" if last else "+>") + ">>>>+>>>>>"
 
 	return result + "<<<<"
 
@@ -592,81 +674,92 @@ def database_load_command(path):
 def database_go_next_command():
 	"Переходит к следующему чанку"
 
-	return ">>>>" + array_go_end_command() + ">>>>>>"
+	return ">>>>" + array_go_end_command() + ">>>>>>>>>"
 
 @command
 def database_go_back_command():
 	"Переходит к предыдущему чанку"
 
-	return "<<<<<<" + array_go_start_command() + "<<<<"
+	return "<<<<<<<<<" + array_go_start_command() + "<<<<"
 
 @command
 def database_go_end_command():
 	"Переходит к последнему чанку"
 
-	return "<<<[>>>" + database_go_next_command() + "<<<]>>>"
+	return "<<<<<<[>>>>>>" + database_go_next_command() + "<<<<<<]>>>>>>"
 
 @command
 def database_go_start_command():
 	"Переходит к первому чанку"
 
-	return "<<<<[>>>>" + database_go_back_command() + "<<<<]>>>>"
+	return "<<<<<<<[>>>>>>>" + database_go_back_command() + "<<<<<<<]>>>>>>>"
 
 @block
 def database_foreach_block():
 	"Цикл по каждому чанку. Указатель остаётся на последнем"
 
-	return "+[-", "<<<[>>>" + database_go_next_command() + "<<< >>>+<<< [->>>>+<<<<]]>>> >[-<<<<+>>>>]<]"
+	return "+[-", "<<<<<<[>>>>>>" + database_go_next_command() + "+<<<<<<[->>>>>>>+<<<<<<<]]>>>>>>>[-<<<<<<<+>>>>>>>]<]"
 
 # Препроцессор
+
+import json.decoder
+
+JSON_decoder = json.decoder.JSONDecoder()
+
+def parse_command(command):
+	name, tail = (command.split(maxsplit = 1) + [""])[: 2]
+	arguments = []
+	shift = 0
+
+	tail = tail.lstrip()
+
+	while tail != "":
+		if tail.startswith("<>"):
+			shift = int(tail[2: ])
+			tail = ""
+		else:
+			argument, length = JSON_decoder.raw_decode(tail)
+			tail = tail[length: ].lstrip()
+
+			arguments.append(argument)
+
+	return name, arguments, shift
 
 root = None
 stack = None
 
-def start_block_command(block, shift, *arguments):
-	start, end = block(*arguments)
-
-	stack.append((end, shift))
-
-	return start
-
-def end_block_command(shift):
-	if shift is not None:
-		raise Exception("Сдвиг у конца блока")
-
-	return stack.pop()
-
 def preprocess_part(code):
 	result = ""
 
-	for i in code.split("\n"):
-		i = i.strip().split("//")[0]
+	for line in code.split("\n"):
+		line = line.split("//")[0].strip()
 
-		if i.startswith("#"):
-			name, *arguments = i[1: ].split()
+		if line.startswith("#"):
+			command = line[1: ]
 
-			if len(arguments) > 0 and arguments[-1].startswith("<>"):
-				shift = int(arguments.pop()[2: ])
+			if command == "END":
+				code, shift = stack.pop()
+				result += code
+			else:
+				name, arguments, shift = parse_command(command)
 
 				result += move(shift)
-			else:
-				shift = None
 
-			if name in blocks:
-				result += start_block_command(blocks[name], shift, *arguments)
-				shift = None
-			elif name == "END":
-				code, shift = end_block_command(shift, *arguments)
-				result += code
-			elif name in commands:
-				result += commands[name](*arguments)
-			else:
-				raise Exception("Неизвестная команда")
+				if name in blocks:
+					start, end = blocks[name](*arguments)
 
-			if shift is not None:
-				result += move(-shift)
+					stack.append((end, shift))
+					shift = 0
+
+					result += start
+				elif name in commands:
+					result += commands[name](*arguments)
+				else:
+					raise Exception("Неизвестная команда")
+
+			result += move(-shift)
 		else:
-			result += i
+			result += line
 
 	return result
 

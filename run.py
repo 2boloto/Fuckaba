@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 server = "./fuckaba.bf"
-address = "127.0.0.1", 8008
+address = "localhost", 8008
 
 import subprocess
 import socket

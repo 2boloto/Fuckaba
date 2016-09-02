@@ -1,6 +1,6 @@
 #BLOCK <>30
-	#DATABASE_LOAD "index.bin"
-	#DATABASE_LOAD "redirect.bin"
+	#DATABASE_LOAD "resources/index.bin"
+	#DATABASE_LOAD "resources/redirect.bin"
 	#DATABASE_GO_START
 	#DATABASE_GO_BACK
 	#DATABASE_GO_START
@@ -10,30 +10,42 @@
 #FOREVER
 	#NETWORK_ACCEPT
 
-	#UNLESS
+	#BOOL_UNLESS
+		#INCLUDE "lib/start-receiving.txt"
+
 		#INCLUDE "lib/route.txt"
 
-		#IF_L
-			#INCLUDE "lib/recvsep.txt" <>4
+		#BOOL_IF_L <>2
+			#ADD_TO 6 <>-2
+			#INCLUDE "lib/receive-head.txt" <>4
+			#ADD_TO -6 <>4
 
-			#IF_L <>4
-				#ELSE <>-1
-					#IF_L <>-2
-						#INCLUDE "post.txt" <>-1
+			#IF_SAVE_FLAG <>-2
+				#UNLESS_SAVE <>5
+					#BOOL_IF <>-2
+						#INCLUDE "lib/post.txt" <>-3
 					#END
 
-					#IF_L <>-1
-						#INCLUDE "admin.txt" <>-2
+					#BOOL_IF <>-1
+						#INCLUDE "lib/admin.txt" <>-4
 					#END
 
-					#IF <>-3
-						#INCLUDE "redirect.txt"
+					#IF_L <>-5
+						#INCLUDE "lib/redirect.txt"
 					#END
 				#END
 
-				#IF_L <>-1
-					#INCLUDE "index.txt" <>-3
+				#BOOL_IF_L <>5
+					#INCLUDE "lib/index.txt" <>-5
 				#END
+			#END
+
+			#BOOL_UNLESS
+				#ZERO <>1
+				#ZERO <>2
+				#ZERO <>3
+
+				#INCLUDE "lib/end-receiving.txt" <>-2
 			#END
 		#END
 

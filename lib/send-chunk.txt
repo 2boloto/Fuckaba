@@ -3,10 +3,7 @@
 // >  0
 // >  0
 // >  массив
-// >  x - служебные данные
-// >  y
-// >  z
-// >  w
+// >  7 байтов служебных данных
 // >- 0
 // >  0
 // >  0
@@ -15,10 +12,7 @@
 // <  0
 // <  0
 // <  массив
-// <  x
-// <  y
-// <  z
-// <  w
+// <  7 байтов служебных данных
 // <- 1, если успешно, иначе 0
 // <  0
 // <  0
@@ -26,33 +20,33 @@
 
 #INC 255
 #WHILE
-	#COPY
+	#ADD_SAVE_TO 1 2
 
 	#BLOCK <>1
 		#NETWORK_SEND
 
-		#BLOCK <>-7
+		#BLOCK <>-10
 			#ARRAY_GO_START
 			#ARRAY_FOREACH
-				#OUTPUT 1 <>1
+				#OUTPUT <>1
 			#END
 		#END
 
 		#BLOCK <>1
-			#INPUT 1
+			#INPUT
 
-			#UNLESS
+			#BOOL_UNLESS
 				#INC -1 <>1
-				#INPUT 1 <>-1
+				#INPUT <>-1
 			#END
 
 			#INC 1 <>1
 		#END
 
 		#SUB_TO -1
-		#COPY_TO -8 <>-1
+		#ADD_SAVE_TO -8 <>-1
 
-		#BLOCK <>-7
+		#BLOCK <>-10
 			#ARRAY_GO_START
 			#INC 1
 			#ARRAY_GO_END
@@ -72,7 +66,7 @@
 	#END
 #END
 
-#BLOCK <>-6
+#BLOCK <>-9
 	#ARRAY_GO_START
 	#INC 1
 	#ARRAY_GO_START
@@ -81,4 +75,4 @@
 	#ARRAY_GO_END
 #END
 
-#NOT_FROM 3
+#BOOL_NOT_TO -3 <>3
