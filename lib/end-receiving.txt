@@ -4,14 +4,12 @@
 
 // >- r или 0
 // >  0
-// >  0
 
 // <- 0
 // <  0
-// <  0
 
-#IF_SAVE
-	#INC -1
+#WHILE
+	#INCREASE -1
 
 	#FOR
 		#INPUT <>1

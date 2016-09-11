@@ -3,50 +3,134 @@
 // См. `start-receiving.txt`.
 
 // >- r
-// >  26 нулей
+// >  13 нулей
 
 // <- новый r, если хорошо, иначе 0
 // <  0
-// <  1, если хоть одно из трёх значений подошло, иначе 0
+// <  0
 // <  1, если байты равны `POST / H`, иначе 0
 // <  1, если байты равны `POST /a `, иначе 0
 // <  1, если байты равны `GET / HT`, иначе 0
-// <  21 нуль
+// <  8 нулей
 
-#ADD_TO 3
+// Эти три флага будут иметь неопределённые значения в случае неудачи.
 
-#BLOCK <>3
-	#INC 8 <>3
-	#INCLUDE "receive-bytes.txt"
-	#ADD_TO -3
-#END
+#INCREASE 1 <>3
+#INCREASE 1 <>4
+#INCREASE 1 <>5
+
+#INCLUDE "receive-byte.txt"
 
 #IF_SAVE
-	#BLOCK <>6
-		#ARRAY_COMPARE [80, 79, 83, 84, 32, 47, 32, 72]
+	#VISIT 1
+		#INPUT
+		#INCREASE -80
+		#NOT_AND_TO_SAVE 2 1
+		#INCREASE 0
+		#NOT_AND_TO_SAVE 3 1
+		#INCREASE 9
+		#NOT_AND_TO 4 1
+	#END
 
-		#INC 1 <>-3
-		#INC 1 <>-4
+	#INCLUDE "receive-byte.txt"
 
-		#BOOL_UNLESS
-			#INC -1 <>-3
-			#INC 1 <>-2
+	#IF_SAVE
+		#VISIT 1
+			#INPUT
+			#INCREASE -79
+			#NOT_AND_TO_SAVE 2 1
+			#INCREASE 0
+			#NOT_AND_TO_SAVE 3 1
+			#INCREASE 10
+			#NOT_AND_TO 4 1
+		#END
 
-			#ARRAY_COMPARE [80, 79, 83, 84, 32, 47, 97, 32]
+		#INCLUDE "receive-byte.txt"
 
-			#BOOL_UNLESS
-				#INC -1 <>-2
-				#INC -1 <>-4
+		#IF_SAVE
+			#VISIT 1
+				#INPUT
+				#INCREASE -83
+				#NOT_AND_TO_SAVE 2 1
+				#INCREASE 0
+				#NOT_AND_TO_SAVE 3 1
+				#INCREASE -1
+				#NOT_AND_TO 4 1
+			#END
 
-				#ARRAY_COMPARE [71, 69, 84, 32, 47, 32, 72, 84]
+			#INCLUDE "receive-byte.txt"
 
-				#BOOL_IF
-					#INC 1 <>-1
-					#INC 1 <>-4
+			#IF_SAVE
+				#VISIT 1
+					#INPUT
+					#INCREASE -84
+					#NOT_AND_TO_SAVE 2 1
+					#INCREASE 0
+					#NOT_AND_TO_SAVE 3 1
+					#INCREASE 52
+					#NOT_AND_TO 4 1
+				#END
+
+				#INCLUDE "receive-byte.txt"
+
+				#IF_SAVE
+					#VISIT 1
+						#INPUT
+						#INCREASE -32
+						#NOT_AND_TO_SAVE 2 1
+						#INCREASE 0
+						#NOT_AND_TO_SAVE 3 1
+						#INCREASE -15
+						#NOT_AND_TO 4 1
+					#END
+
+					#INCLUDE "receive-byte.txt"
+
+					#IF_SAVE
+						#VISIT 1
+							#INPUT
+							#INCREASE -47
+							#NOT_AND_TO_SAVE 2 1
+							#INCREASE 0
+							#NOT_AND_TO_SAVE 3 1
+							#INCREASE 15
+							#NOT_AND_TO 4 1
+						#END
+
+						#INCLUDE "receive-byte.txt"
+
+						#IF_SAVE
+							#VISIT 1
+								#INPUT
+								#INCREASE -32
+								#NOT_AND_TO_SAVE 2 1
+								#INCREASE -65
+								#NOT_AND_TO_SAVE 3 1
+								#INCREASE 25
+								#NOT_AND_TO 4 1
+							#END
+
+							#INCLUDE "receive-byte.txt"
+
+							#IF_SAVE
+								#VISIT 1
+									#INPUT
+									#INCREASE -72
+									#NOT_AND_TO_SAVE 2 1
+									#INCREASE 40
+									#NOT_AND_TO_SAVE 3 1
+									#INCREASE -52
+									#NOT_AND_TO 4 1
+								#END
+
+								#ADD_TO 6
+								#INCLUDE "skip-line.txt" <>6
+								#ADD_TO -6 <>6
+							#END
+						#END
+					#END
 				#END
 			#END
 		#END
-
-		#ARRAY_CLEAR <>1
 	#END
 #END

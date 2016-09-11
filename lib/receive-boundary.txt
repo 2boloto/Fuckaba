@@ -1,0 +1,135 @@
+// Получает из сети разделитель для данных формы. Он должен начинаться на `--`, не содержать внутри одиночных `\r` и иметь длину не более 72 символов. В итоговый массив включён перевод строки `\r\n`. В случае неудачи может получить из сети лишних данных.
+
+// См. `start-receiving.txt`.
+
+// >- r
+// >  168 нулей
+
+// <- r, если не было ошибки соединения, иначе 0
+// <  0
+// <  1, если хорошо, иначе 0
+// <  0
+// <  0
+// <  0
+// <  0
+// <  0
+// <  0
+// <  массив, если хорошо, 154 нуля иначе
+// <  6 нулей
+
+#ADD_TO 15
+#GO 15
+
+#INCLUDE "receive-byte.txt"
+
+#IF_SAVE
+	#VISIT 1
+		#INPUT
+		#INCREASE -45
+
+		#UNLESS
+			#VISIT -1
+				#INCLUDE "receive-byte.txt"
+
+				#IF_SAVE
+					#VISIT 1
+						#INPUT
+						#INCREASE -45
+
+						#UNLESS
+							#ADD_TO 4 <>-1
+							#INCREASE 1 <>-5
+							#INCREASE 45 <>-4
+							#INCREASE 1 <>-3
+							#INCREASE 45 <>-2
+							#INCREASE 71 <>2
+							#GO 4
+						#END
+					#END
+				#END
+			#END
+		#END
+	#END
+#END
+
+#FOR_L <>-1
+	#INCLUDE "receive-byte.txt"
+
+	#IF_SAVE_FLAG
+		#VISIT 1
+			#INPUT
+			#INCREASE -13
+
+			#IF_SAVE_FLAG
+				#INCREASE 1 <>-5
+				#ADD_TO -4
+				#INCREASE 13 <>-4
+
+				#ADD_TO 2 <>-2
+				#ADD_TO 2 <>-1
+				#GO 2
+			#END
+
+			#ELSE
+				#ZERO <>-2
+
+				#INCLUDE "receive-byte.txt" <>-1
+
+				#IF_SAVE <>-1
+					#INPUT
+					#INCREASE -10
+
+					#UNLESS
+						#INCREASE 1 <>-3
+					#END
+				#END
+			#END
+		#END
+	#END
+
+	#ELSE
+		#ZERO <>-1
+	#END
+#END
+
+#BOOL_IF <>-2
+	#INCREASE 1 <>-3
+	#INCREASE 1 <>-1
+#END
+
+#BOOL_UNLESS <>-1
+	#GO -6
+
+	#WHILE
+		#INCREASE -1
+		#ZERO <>1
+		#ADD_TO -2 <>6
+		#GO -2
+	#END
+
+	#ADD_TO -15 <>6
+	#GO -5
+#END
+
+#BOOL_IF_L <>-3
+	#INCREASE 1 <>-4
+	#INCREASE 13 <>-3
+	#INCREASE 1 <>-2
+	#INCREASE 10 <>-1
+
+	#ADD_TO 1
+
+	#FOR <>1
+		#ARRAY_GO_START
+		#INCREASE 1 <>-9
+		#ARRAY_GO_END
+	#END
+
+	#GO -4
+	#ARRAY_GO_START
+	#GO -5
+
+	#INCREASE 1 <>-2
+#END
+
+#GO -4

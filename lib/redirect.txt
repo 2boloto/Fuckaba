@@ -1,21 +1,21 @@
 // Отправляет в сеть перенаправление на главную страницу.
 
-// >- 30 нулей
-// >  базы данных
+// >- 0
+// >  0
+// >  0
+// >  0
 
-// <- 30 нулей
-// <  базы данных
+// <- 0
+// <  0
+// <  0
+// <  0
 
-#BLOCK <>30
-	#DATABASE_GO_NEXT
-	#DATABASE_GO_END
-	#DATABASE_GO_NEXT
+#DATABASE_GO_START
+#DATABASE_GO_BACK
+#DATABASE_GO_START
 
-	#INCLUDE "send-database.txt"
-	#ZERO <>1
+#INCLUDE "send-database.txt"
+#ZERO <>1
 
-	#DATABASE_GO_START
-	#DATABASE_GO_BACK
-	#DATABASE_GO_START
-	#DATABASE_GO_BACK
-#END
+#DATABASE_GO_NEXT
+#DATABASE_GO_END

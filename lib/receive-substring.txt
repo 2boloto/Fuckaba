@@ -1,0 +1,124 @@
+// Получает из сети байт до тех пор, пока не будет найдена указанная подстрока или не произойдёт ошибка соединения. Сама подстрока игнорируется.
+
+// См. `start-receiving.txt`.
+
+// Первый вызов:
+
+// >- r
+// >  0
+// >  0
+// >  1
+// >  0
+// >  1
+// >  0
+// >  0
+// >  0
+// >  массив с подстрокой
+
+// Дальнейшие вызовы должны полностью сохранять возврат из предыдыщуего, кроме полученного байта - его надо занулять.
+
+// <- новый r, если хорошо, иначе 0
+// >  0
+// >  0
+// >  0, если поиск закончен - найдено или ошибка соединения - иначе 1
+// >  полученный байт, если поиск не закончен, иначе 0
+// >  байты в количестве 4 + длина массива
+
+// Когда поиск кончается, содержимое последних байтов зависит от причины:
+// - если подстрока найдена, то там будет 2 нуля, массив и ещё 2 нуля - то есть массив будет сдвинут влево на 2 ячейки;
+// - если была ошибка соединения, то влево сдвинется не весь массив, а только его часть, а посреди массива возникнут 2 нулевых байта.
+
+#WHILE <>5
+	#INCLUDE "receive-byte.txt"
+
+	#IF_SAVE_FLAG
+		#VISIT 7
+			#ARRAY_GO_END
+			#GO 2
+
+			#INPUT
+			#SUB_TO_SAVE -1 -3 <>1
+			#INCREASE 1 <> -2
+			#ADD_TO -2 <>1
+
+			#WHILE
+				#ADD_TO 1
+				#ADD_TO_SAVE 2 1 <>-1
+				#ARRAY_GO_START
+				#INCREASE -1 <>-2
+				#INCREASE 1 <>1
+			#END
+
+			#BOOL_UNLESS <>2
+				#ARRAY_GO_START
+				#INCREASE -1 <>-4
+				#INCREASE -1 <>-2
+				#INCREASE 1 <>1
+				#INCREASE -1 <>2
+			#END
+
+			#INCREASE 1 <>2
+
+			#BOOL_UNLESS <>1
+				#ARRAY_GO_START
+			#END
+		#END
+	#END
+
+	#ELSE
+		#INCREASE -1 <>3
+		#INCREASE -1 <>5
+	#END
+#END
+
+#IF_SAVE_BACK <>3
+	#VISIT 5
+		#ARRAY_GO_END
+		#GO 2
+
+		#BOOL_UNLESS <>2
+			#FOR <>3
+				#VISIT -2
+					#ARRAY_GO_START
+					#INCREASE 1 <>-1
+					#ARRAY_GO_END
+				#END
+			#END
+
+			#ADD_TO 2 <>1
+			#ADD_TO 1
+			#INCREASE 1 <>2
+
+			#INCREASE 1
+			#INCREASE 1 <>-2
+
+			#GO -4 <>2
+			#ARRAY_GO_START <>2
+
+			#INCREASE -1 <>4
+			#INCREASE -1 <>6
+			#INCREASE -1 <>7
+
+			#GO 2
+		#END
+
+		#IF
+			#FOR <>1
+				#INCREASE 1 <>2
+
+				#VISIT -2
+					#ARRAY_GO_START
+					#INCREASE 1 <>-1
+					#ARRAY_GO_END
+				#END
+			#END
+
+			#ADD_TO 1
+			#INCREASE 1 <>-2
+			#ARRAY_GO_START
+		#END
+
+		#ADD_TO_SAVE -1 -2 <>2
+		#BOOL_NOT_TO -1 <>1
+	#END
+#END

@@ -41,28 +41,28 @@ Content-Type: text/html
 <section class = "form">
 	<h1>Ответ</h1>
 
-	<form method = "post">
+	<p>Доска сможет принять не более 9999 постов.</p>
+
+	<form method = "post" enctype = "multipart/form-data">
 		<p><label for = "message">Сообщение:</label></p>
 
 		<p><textarea id = "message" name = "m"></textarea></p>
 
-		<p><label for = "image">Картинка в Бейс-64:</label></p>
+		<p><label>Картинка: <input name = "i" type = "file" accept = "image/jpeg,image/png,image/gif" /></label></p>
 
-		<p><textarea id = "image" name = "i"></textarea></p>
-
-		<p><input type = "submit" value = "Отправить" /> Доска сможет принять не более 9999 постов.</p>
+		<p><input type = "submit" value = "Отправить" /></p>
 	</form>
 </section>
 
 <section class = "form">
 	<h1>Админка</h1>
 
-	<form method = "post" action = "/a">
-		<p><label>Пароль (8 символов: цифры, английские буквы): <input name = "p" /></label></p>
+	<form method = "post" enctype = "multipart/form-data" action = "/a">
+		<p><label>Пароль: <input name = "p" /></label></p>
 
 		<p><label>Номер поста: <input name = "n" /></label></p>
 
-		<p><input type = "submit" value = "Удалить" /> Первая отправка формы установит пароль.</p>
+		<p><input type = "submit" value = "Удалить" /></p>
 	</form>
 </section>
 

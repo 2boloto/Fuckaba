@@ -15,19 +15,17 @@
 // <  массив с полученными данными, если всё нормально, иначе нули
 
 #FOR_L <>3
-	#BLOCK <>-3
-		#INCLUDE "receive-byte.txt"
+	#INCLUDE "receive-byte.txt"
 
-		#IF_SAVE_FLAG
-			#ARRAY_END <>4
-				#INPUT <>1
-				#INC 1
-			#END
+	#IF_SAVE_FLAG
+		#ARRAY_END <>4
+			#INPUT <>5
+			#INCREASE 1 <>4
 		#END
+	#END
 
-		#BOOL_UNLESS <>2
-			#ZERO <>1
-			#ARRAY_CLEAR <>2
-		#END
+	#ELSE
+		#ZERO <>3
+		#ARRAY_CLEAR <>4
 	#END
 #END

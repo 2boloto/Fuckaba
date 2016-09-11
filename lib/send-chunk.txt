@@ -18,47 +18,47 @@
 // <  0
 // <  0
 
-#INC 255
+#INCREASE 255
 #WHILE
-	#ADD_SAVE_TO 1 2
+	#ADD_TO_SAVE 1 2
 
-	#BLOCK <>1
+	#VISIT 1
 		#NETWORK_SEND
 
-		#BLOCK <>-10
+		#VISIT -10
 			#ARRAY_GO_START
 			#ARRAY_FOREACH
 				#OUTPUT <>1
 			#END
 		#END
 
-		#BLOCK <>1
+		#VISIT 1
 			#INPUT
 
 			#BOOL_UNLESS
-				#INC -1 <>1
+				#INCREASE -1 <>1
 				#INPUT <>-1
 			#END
 
-			#INC 1 <>1
+			#INCREASE 1 <>1
 		#END
 
 		#SUB_TO -1
-		#ADD_SAVE_TO -8 <>-1
+		#ADD_TO_SAVE -8 <>-1
 
-		#BLOCK <>-10
+		#VISIT -10
 			#ARRAY_GO_START
-			#INC 1
+			#INCREASE 1
 			#ARRAY_GO_END
 
 			#GO -2
-			#INC -1
+			#INCREASE -1
 
 			#WHILE
 				#ADD_TO -2
-				#INC 1
+				#INCREASE 1
 				#GO -2
-				#INC -2
+				#INCREASE -2
 			#END
 
 			#ARRAY_GO_END
@@ -66,12 +66,12 @@
 	#END
 #END
 
-#BLOCK <>-9
+#VISIT -9
 	#ARRAY_GO_START
-	#INC 1
+	#INCREASE 1
 	#ARRAY_GO_START
 	#GO 2
-	#INC -1
+	#INCREASE -1
 	#ARRAY_GO_END
 #END
 

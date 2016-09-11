@@ -5,104 +5,81 @@
 
 import os.path
 
-names = {"END"}
+names = {"END", "INCLUDE"}
 commands = {}
 blocks = {}
 
-def command(function):
-	name = function.__name__[: -8].upper()
+def decorator(category, suffix, function):
+	name = function.__name__[: -len(suffix)].upper()
 
 	if name in names:
 		raise Exception("Имя занято")
 
-	commands[name] = function
 	names.add(name)
+	category[name] = function
 
 	return function
 
-def block(function):
-	name = function.__name__[: -6].upper()
-
-	if name in names:
-		raise Exception("Имя занято")
-
-	blocks[name] = function
-	names.add(name)
-
-	return function
+command = lambda function: decorator(commands, "_command", function)
+block = lambda function: decorator(blocks, "_block", function)
 
 # Простые команды
 
-def move(count):
+def go(count):
 	if count > 0:
 		return ">" * count
 	else:
 		return "<" * -count
 
-def increment(count):
+def visit(count, command):
+	return go(count) + command + go(-count)
+
+def increase(count):
 	if count > 0:
 		return "+" * count
 	else:
 		return "-" * -count
 
 @command
-def go_command(count):
+def go_command(root, count):
 	"Переходит на задданой число ячеек влево или вправо"
 
-	return move(count)
+	return go(count)
 
 @command
-def input_command():
+def input_command(root):
 	"Вводит байт"
 
 	return ","
 
 @command
-def output_command():
+def output_command(root):
 	"Выводит байт"
 
 	return "."
 
 @command
-def zero_command():
+def zero_command(root):
 	"Зануляет данную ячейку"
 
 	return "[-]"
 
 @command
-def inc_command(count):
+def increase_command(root, count):
 	"Увеличивает или уменьшает данную ячеку на заданное число"
 
-	return increment(count)
-
-@command
-def include_command(path):
-	"Вставляет код из другого файла, обработав его препроцессором"
-
-	global root
-
-	path = os.path.join(root, path)
-
-	with open(path) as file:
-		code = file.read()
-
-	temp = root
-	root = os.path.split(path)[0]
-	result = preprocess_part(code)
-	root = temp
-
-	return result
+	return increase(count)
 
 @block
-def block_block():
-	"Блок кода"
+def visit_block(root, count):
+	"Переходит к указанной ячейке на входе и возвращается на выходе"
 
-	return "", ""
+	return go(count), go(-count)
 
 @block
-def if_block():
+def if_block(root):
 	"""
-		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
+		Условный блок, выполняется, если указанная ячейка - не нуль. После выполнения она зануляется.
 
 		>- a
 
@@ -116,7 +93,7 @@ def if_block():
 	return "[", "[-]]"
 
 @block
-def bool_if_block():
+def bool_if_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
 
@@ -134,7 +111,7 @@ def bool_if_block():
 	return "[", "-]"
 
 @block
-def if_l_block():
+def if_l_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполненем она зануляется.
 
@@ -150,7 +127,7 @@ def if_l_block():
 	return "[[-]", "]"
 
 @block
-def bool_if_l_block():
+def bool_if_l_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполнения она зануляется.
 
@@ -168,7 +145,7 @@ def bool_if_l_block():
 	return "[-", "]"
 
 @block
-def if_save_block():
+def if_save_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется.
 
@@ -192,7 +169,31 @@ def if_save_block():
 	return "[", ">>+<]>[-<]<"
 
 @block
-def if_save_flag_block():
+def if_save_back_block(root):
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется.
+
+		>  0
+		>  0
+		>- a
+
+		<  0
+		<  0
+		<- a
+
+		>  0
+		>  0
+		>- x - неважно
+
+		<  0
+		<  0
+		<- a, если не выполнился, иначе x
+	"""
+
+	return "[", "<<+>]<[->]>"
+
+@block
+def if_save_flag_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется. Сохраняет флаг во второй справа ячейке.
 
@@ -216,7 +217,79 @@ def if_save_flag_block():
 	return "[", ">>+<]>[<]<"
 
 @block
-def unless_block():
+def if_save_back_flag_block(root):
+	"""
+		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется. Сохраняет флаг во второй справа ячейке.
+
+		>  0
+		>  0
+		>- a
+
+		<  0
+		<  0
+		<- a
+
+		>  0
+		>  0
+		>- x - неважно
+
+		<  1, если выполнился, иначе 0
+		<  0
+		<- a, если не выполнился, иначе x
+	"""
+
+	return "[", "<<+>]<[>]>"
+
+@block
+def else_block(root):
+	"""
+		Условный блок, выполняется, если предыдущая команда `IF_SAVE_FLAG` не выполнилась.
+
+		>- x - неважно
+		>  y - неважно
+		>  флаг
+
+		<- x
+		<  y
+		<  0
+
+		>- z - неважно
+		>  w - неважно
+		>  0
+
+		<- x, если не выполнился, иначе z
+		<  y, если не выполнился, иначе w
+		<  0
+	"""
+
+	return ">>-[+<<", ">>]<<"
+
+@block
+def else_back_block(root):
+	"""
+		Условный блок, выполняется, если предыдущая команда `IF_SAVE_BACK_FLAG` не выполнилась.
+
+		>  флаг
+		>  y - неважно
+		>- x - неважно
+
+		<  0
+		<  y
+		<- x
+
+		>  0
+		>  w - неважно
+		>- z - неважно
+
+		<  0
+		<  y, если не выполнился, иначе w
+		<- x, если не выполнился, иначе z
+	"""
+
+	return "<<-[+>>", "<<]>>"
+
+@block
+def unless_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
 
@@ -236,7 +309,7 @@ def unless_block():
 	return "[[-]>+<]>-[+<", ">]<"
 
 @block
-def bool_unless_block():
+def bool_unless_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
 
@@ -254,7 +327,7 @@ def bool_unless_block():
 	return "-[+", "]"
 
 @block
-def unless_save_block():
+def unless_save_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Её значение сохраняется.
 
@@ -278,7 +351,31 @@ def unless_save_block():
 	return "[>>+<]>[<]>-[+<<", ">>]<<"
 
 @block
-def for_block():
+def unless_save_back_block(root):
+	"""
+		Условный блок, выполняется, если данная ячейка - нуль. Её значение сохраняется.
+
+		>  0
+		>  0
+		>- a
+
+		<  0
+		<  0
+		<- 0
+
+		>  0
+		>  y - неважно
+		>- x - неважно
+
+		<  0
+		<  0, если не выполнился, иначе y
+		<- a, если не выолнился, иначе x
+	"""
+
+	return "[<<+>]<[>]<-[+>>", "<<]>>"
+
+@block
+def for_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1.
 
@@ -294,7 +391,7 @@ def for_block():
 	return "[", "-]"
 
 @block
-def for_l_block():
+def for_l_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём. Перед каждой итерацией она уменьшается на 1.
 
@@ -310,7 +407,7 @@ def for_l_block():
 	return "[-", "]"
 
 @block
-def while_block():
+def while_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём.
 
@@ -326,7 +423,7 @@ def while_block():
 	return "[", "]"
 
 @block
-def forever_block():
+def forever_block(root):
 	"""
 		Бесконечный цикл.
 
@@ -344,7 +441,7 @@ def forever_block():
 # Команды с несколькими вводами
 
 @command
-def add_to_command(destination):
+def add_to_command(root, destination):
 	"""
 		Складывает данную ячейку с указанной.
 
@@ -359,10 +456,10 @@ def add_to_command(destination):
 		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	return "[-" + move(destination) + "+" + move(-destination) + "]"
+	return "[-" + visit(destination, "+") + "]"
 
 @command
-def sub_to_command(destination):
+def sub_to_command(root, destination):
 	"""
 		Отнимает данную ячейку от указанной.
 
@@ -377,10 +474,10 @@ def sub_to_command(destination):
 		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	return "[-" + move(destination) + "-" + move(-destination) + "]"
+	return "[-" + visit(destination, "-") + "]"
 
 @command
-def add_save_to_command(destination, buffer = 1):
+def add_to_save_command(root, destination, buffer = 1):
 	"""
 		Складывает с указанной ячейкой данную, сохраняя её значение с помощью временной.
 
@@ -399,13 +496,10 @@ def add_save_to_command(destination, buffer = 1):
 		Сдвиги не должны быть нулевыми или одинаковыми.
 	"""
 
-	return (
-		"[-" + move(buffer) + "+" + move(-buffer + destination) + "+" + move(-destination) +"]" +
-		move(buffer) + "[-" + move(-buffer) + "+" + move(buffer) + "]" + move(-buffer)
-	)
+	return "[-" + visit(buffer, "+") + visit(destination, "+") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
 @command
-def sub_save_to_command(destination, buffer = 1):
+def sub_to_save_command(root, destination, buffer = 1):
 	"""
 		Отнимает от указанной ячейки данную, сохраняя её значение с помощью временной.
 
@@ -424,53 +518,90 @@ def sub_save_to_command(destination, buffer = 1):
 		Сдвиги не должны быть нулевыми или одинаковыми.
 	"""
 
-	return (
-		"[-" + move(buffer) + "+" + move(-buffer + destination) + "-" + move(-destination) +"]" +
-		move(buffer) + "[-" + move(-buffer) + "+" + move(buffer) + "]" + move(-buffer)
-	)
+	return "[-" + visit(buffer, "+") + visit(destination, "-") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
 @command
-def not_to_command(destination):
+def not_to_command(root, destination):
 	"""
 		Обаращает значение данной ячейки.
 
-		>  a
+		>- a
 		>  ...
-		>- 0
+		>  0
 
-		<  0
+		<- 0
 		<  ...
-		<- !a
+		<  !a
 
 		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	return move(destination) + "+" + move(-destination) + "[[-]" + move(destination) + "-" + move(-destination) + "]"
+	return visit(destination, "+") + "[[-]" + visit(destination, "-") + "]"
 
 @command
-def bool_not_to_command(destination):
+def bool_not_to_command(root, destination):
 	"""
 		Обаращает значение данной ячейки.
 
 		Подразумевается, что она может принимать только два значения: 0 и 1.
 
-		>  a
+		>- a
 		>  ...
-		>- 0
+		>  0
 
-		<  0
+		<- 0
 		<  ...
-		<- !a
+		<  !a
 
 		Сдвиг может быть любым, но не нулевым.
 	"""
 
-	return move(destination) + "+" + move(-destination) + "[-" + move(destination) + "-" + move(-destination) + "]"
+	return visit(destination, "+") + "[-" + visit(destination, "-") + "]"
+
+@command
+def not_and_to_command(root, destination, buffer):
+	"""
+		Выполняет логическое и с заданной ячейкой и обращённой данной.
+
+		>- a
+		>  ...
+		>  b
+
+		<- a
+		<  ...
+		<  b & !a
+
+		Сдвиг может быть любым, но не нулевым.
+	"""
+
+	return "[[-]" + visit(destination, "[-]") + "]"
+
+@command
+def not_and_to_save_command(root, destination, buffer):
+	"""
+		Выполняет логическое и с заданной ячейкой и обращённой данной, сохраняя её значение.
+
+		>- a
+		>  ...
+		>  b
+		>  ...
+		>  0
+
+		<- a
+		<  ...
+		<  b & !a
+		<  ...
+		<  0
+
+		Сдвиги не должны быть нулевыми или одинаковыми.
+	"""
+
+	return "[-" + visit(buffer, "+") + visit(destination, "[-]") + "]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
 # Сетевые команды
 
 @command
-def network_accept_command():
+def network_accept_command(root):
 	"""
 		Принимает соединение.
 
@@ -482,7 +613,7 @@ def network_accept_command():
 	return ".,"
 
 @command
-def network_recv_command():
+def network_recv_command(root):
 	"""
 		Принимает данные.
 
@@ -498,7 +629,7 @@ def network_recv_command():
 	return ">+.-<.,"
 
 @command
-def network_send_command():
+def network_send_command(root):
 	"""
 		Отправляет данные.
 
@@ -514,7 +645,7 @@ def network_send_command():
 	return ">++.--<."
 
 @command
-def network_close_command():
+def network_close_command(root):
 	"""
 		Закрывает соединение.
 
@@ -558,36 +689,39 @@ def network_close_command():
 """
 
 @command
-def array_go_end_command():
+def array_go_end_command(root):
 	"Перемещается в конец массива"
 
 	return ">>[>>]"
 
 @command
-def array_go_start_command():
+def array_go_start_command(root):
 	"Перемещается в начало массива"
 
 	return "<<[<<]"
 
 @command
-def array_set_command(string):
+def array_set_command(root, string):
 	"Создаёт массив из указанных байтов. Указатель остаётся на начале"
+
+	if type(string) is str:
+		string = string.encode()
 
 	base = list(sorted(string))[len(string) // 2]
 
 	return (
-		">>" + "+>>" * len(string) + ">" + increment(base) + "[-<<<[>+<<<]>>[>>]>]" +
-		"<<" + "<<".join(increment(i - base) for i in reversed(string)) + "<<<"
+		">>" + "+>>" * len(string) + ">" + increase(base) + "[-<<<[>+<<<]>>[>>]>]" +
+		"<<" + "<<".join(increase(i - base) for i in reversed(string)) + "<<<"
 	)
 
 @command
-def array_clear_command():
+def array_clear_command(root):
 	"Очищает массив"
 
 	return ">>[>>]<<[->[-]<<<]"
 
 @command
-def array_compare_command(string):
+def array_compare_command(root, string):
 	"""
 		Сравнивает массив с константной строкой, оставляя массив неизменным. Его длина должна соответствовать длине константы и ограничена 255 байтами.
 
@@ -598,27 +732,30 @@ def array_compare_command(string):
 		<  массив
 	"""
 
+	if type(string) is str:
+		string = string.encode()
+
 	return (
 		">>>-" + "".join((
-				">[-<+>>+<]<[->+<]+>>" + increment(-string[i] - (i < len(string) - 1)) + "[[-]<<->>]"
+				">[-<+>>+<]<[->+<]+>>" + increase(-string[i] - (i < len(string) - 1)) + "[[-]<<->>]"
 		) for i in range(len(string))) +
-		"-" + "<<[-<<+>>]>>+<<" * len(string) + "+<<<+>" + increment(-len(string)) + "[[-]<->]<"
+		"-" + "<<[-<<+>>]>>+<<" * len(string) + "+<<<+>" + increase(-len(string)) + "[[-]<->]<"
 	)
 
 @block
-def array_start_block():
+def array_start_block(root):
 	"Идёт по массиву до начала и назад"
 
 	return "<<[<<]", ">>[>>]"
 
 @block
-def array_end_block():
+def array_end_block(root):
 	"Идёт по массиву до конца и назад"
 
 	return ">>[>>]", "<<[<<]"
 
 @block
-def array_foreach_block():
+def array_foreach_block(root):
 	"Цикл по каждому элементу массива. Указатель остаётся на конце"
 
 	return ">>[", ">>]"
@@ -639,25 +776,23 @@ def array_foreach_block():
 	>  0
 	>  0
 	>  0
+	>  0
 
-	Перед базой данныз должно быть 4 нуля.
+	Перед базой данных должно быть 5 нулей.
 
 	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель на четвёртой ячейке из этого списка.
 """
 
 @command
-def database_load_command(path):
-	"Загружает базу данных из файла в память"
+def database_load_command(root, path):
+	"Загружает базу данных из файла в память, указатель остаётся на последнем чанке"
 
 	path = os.path.join(root, path)
 
 	with open(path, "rb") as file:
 		data = file.read()
 
-	result = ">>>>"
-
-	def difference(count):
-		return count if count <= 128 else -(256 - count)
+	result = ">>>>>"
 
 	for i in range(0, len(data), 255):
 		chunk = data[i: i + 255]
@@ -666,39 +801,45 @@ def database_load_command(path):
 		first = i == 0
 		last = i >= len(data) - 255
 
-		result += array_set_command(chunk) + ">>[>>]>>" + (">" if first else "+>") + (">" if last else "+>") + ">>>>+>>>>>"
+		result += (
+			array_set_command(root, chunk) + ">>[>>]>>" +
+			("" if first else "+") + ">" + ("" if last else "+") + ">>>>>+>>>>>>"
+		)
 
-	return result + "<<<<"
+	return result + "<<<<<"
 
 @command
-def database_go_next_command():
+def database_go_next_command(root):
 	"Переходит к следующему чанку"
 
-	return ">>>>" + array_go_end_command() + ">>>>>>>>>"
+	return ">>>>>" + array_go_end_command(root) + ">>>>>>>>>"
 
 @command
-def database_go_back_command():
+def database_go_back_command(root):
 	"Переходит к предыдущему чанку"
 
-	return "<<<<<<<<<" + array_go_start_command() + "<<<<"
+	return "<<<<<<<<<" + array_go_start_command(root) + "<<<<<"
 
 @command
-def database_go_end_command():
+def database_go_end_command(root):
 	"Переходит к последнему чанку"
 
-	return "<<<<<<[>>>>>>" + database_go_next_command() + "<<<<<<]>>>>>>"
+	return "<<<<<<[>>>>>>" + database_go_next_command(root) + "<<<<<<]>>>>>>"
 
 @command
-def database_go_start_command():
+def database_go_start_command(root):
 	"Переходит к первому чанку"
 
-	return "<<<<<<<[>>>>>>>" + database_go_back_command() + "<<<<<<<]>>>>>>>"
+	return "<<<<<<<[>>>>>>>" + database_go_back_command(root) + "<<<<<<<]>>>>>>>"
 
 @block
-def database_foreach_block():
+def database_foreach_block(root):
 	"Цикл по каждому чанку. Указатель остаётся на последнем"
 
-	return "+[-", "<<<<<<[>>>>>>" + database_go_next_command() + "+<<<<<<[->>>>>>>+<<<<<<<]]>>>>>>>[-<<<<<<<+>>>>>>>]<]"
+	return (
+		"+[-",
+		"<<<<<<[>>>>>>" + database_go_next_command(root) + "+<<<<<<[->>>>>>>+<<<<<<<]]>>>>>>>[-<<<<<<<+>>>>>>>]<]"
+	)
 
 # Препроцессор
 
@@ -725,10 +866,7 @@ def parse_command(command):
 
 	return name, arguments, shift
 
-root = None
-stack = None
-
-def preprocess_part(code):
+def preprocess_part(code, root, stack):
 	result = ""
 
 	for line in code.split("\n"):
@@ -739,37 +877,41 @@ def preprocess_part(code):
 
 			if command == "END":
 				code, shift = stack.pop()
-				result += code
+				result += go(shift) + code
 			else:
 				name, arguments, shift = parse_command(command)
 
-				result += move(shift)
+				result += go(shift)
 
-				if name in blocks:
-					start, end = blocks[name](*arguments)
+				if name == "INCLUDE":
+					path, = arguments
+					path = os.path.join(root, path)
+
+					with open(path) as file:
+						code = file.read()
+
+					result += preprocess_part(code, os.path.split(path)[0], stack)
+				elif name in blocks:
+					start, end = blocks[name](root, *arguments)
 
 					stack.append((end, shift))
-					shift = 0
 
 					result += start
 				elif name in commands:
-					result += commands[name](*arguments)
+					result += commands[name](root, *arguments)
 				else:
 					raise Exception("Неизвестная команда")
 
-			result += move(-shift)
+			result += go(-shift)
 		else:
 			result += line
 
 	return result
 
-def preprocess(code):
-	global root, stack
-
-	root = "."
+def preprocess(code, root = "."):
 	stack = []
 
-	result = preprocess_part(code)
+	result = preprocess_part(code, root, stack)
 
 	if len(stack) != 0:
 		raise Exception("Не хватает `END`")
@@ -805,8 +947,8 @@ def format(code):
 			for i in moves:
 				difference = differences[i] % 256
 
-				result += move(i - pointer)
-				result += increment(difference if difference <= 128 else -(256 - difference))
+				result += go(i - pointer)
+				result += increase(difference if difference <= 128 else -(256 - difference))
 				pointer = i
 
 		if shift > 0:
@@ -816,7 +958,7 @@ def format(code):
 			encode(right_moves)
 			encode(left_moves)
 
-		result += move(shift - pointer)
+		result += go(shift - pointer)
 		pointer = shift
 
 		return result
@@ -834,6 +976,7 @@ def format(code):
 
 	return "#!interpreter\n" + result + "\n"
 
-import sys
+if __name__ == "__main__":
+	import sys
 
-sys.stdout.write(format(preprocess(sys.stdin.read())))
+	sys.stdout.write(format(preprocess(sys.stdin.read())))

@@ -2,21 +2,21 @@
 
 // См. `start-receiving.txt`. Этот модуль сам вызывает `end-receiving.txt`.
 
-// >- r
-// >  29 нулей
 // >  базы данных
+// >- r
+// >  0
+// >  0
+// >  0
 
-// <- 30 нулей
 // <  базы данных
+// <- 0
+// <  0
+// <  0
+// <  0
 
 #INCLUDE "end-receiving.txt"
 
-#BLOCK <>30
-	#DATABASE_GO_NEXT
+#DATABASE_GO_START
 
-	#INCLUDE "send-database.txt"
-	#ZERO <>1
-
-	#DATABASE_GO_START
-	#DATABASE_GO_BACK
-#END
+#INCLUDE "send-database.txt"
+#ZERO <>1
