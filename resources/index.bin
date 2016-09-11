@@ -46,9 +46,9 @@ Content-Type: text/html
 	<form method = "post" enctype = "multipart/form-data">
 		<p><label for = "message">Сообщение:</label></p>
 
-		<p><textarea id = "message" name = "m"></textarea></p>
+		<p><textarea id = "message" name = "message"></textarea></p>
 
-		<p><label>Картинка: <input name = "i" type = "file" accept = "image/jpeg,image/png,image/gif" /></label></p>
+		<p><label>Картинка: <input name = "picture" type = "file" accept = "image/jpeg,image/png,image/gif" /></label></p>
 
 		<p><input type = "submit" value = "Отправить" /></p>
 	</form>
@@ -58,9 +58,9 @@ Content-Type: text/html
 	<h1>Админка</h1>
 
 	<form method = "post" enctype = "multipart/form-data" action = "/a">
-		<p><label>Пароль: <input name = "p" /></label></p>
+		<p><label>Пароль: <input name = "password" /></label></p>
 
-		<p><label>Номер поста: <input name = "n" /></label></p>
+		<p><label>Номер поста: <input name = "number" /></label></p>
 
 		<p><input type = "submit" value = "Удалить" /></p>
 	</form>

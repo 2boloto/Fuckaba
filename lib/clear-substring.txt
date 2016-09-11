@@ -1,0 +1,13 @@
+// Очищает массив или то, что от него осталось, после вызова `receive-substring.txt`.
+
+// >- результат вызова
+
+// <- r
+// <  соответствующее количество нулей
+
+#VISIT 7
+	#ARRAY_GO_END
+	#ARRAY_GO_END
+	#ARRAY_CLEAR
+	#ARRAY_CLEAR
+#END

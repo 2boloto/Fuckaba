@@ -716,43 +716,9 @@ def array_set_command(root, string):
 
 @command
 def array_clear_command(root):
-	"Очищает массив"
+	"Очищает массив. Указатель должен быть на конце"
 
-	return ">>[>>]<<[->[-]<<<]"
-
-@command
-def array_compare_command(root, string):
-	"""
-		Сравнивает массив с константной строкой, оставляя массив неизменным. Его длина должна соответствовать длине константы и ограничена 255 байтами.
-
-		>- 0
-		>  массив
-
-		<- 1, если совпал, иначе 0
-		<  массив
-	"""
-
-	if type(string) is str:
-		string = string.encode()
-
-	return (
-		">>>-" + "".join((
-				">[-<+>>+<]<[->+<]+>>" + increase(-string[i] - (i < len(string) - 1)) + "[[-]<<->>]"
-		) for i in range(len(string))) +
-		"-" + "<<[-<<+>>]>>+<<" * len(string) + "+<<<+>" + increase(-len(string)) + "[[-]<->]<"
-	)
-
-@block
-def array_start_block(root):
-	"Идёт по массиву до начала и назад"
-
-	return "<<[<<]", ">>[>>]"
-
-@block
-def array_end_block(root):
-	"Идёт по массиву до конца и назад"
-
-	return ">>[>>]", "<<[<<]"
+	return "<<[->[-]<<<]"
 
 @block
 def array_foreach_block(root):
@@ -968,7 +934,7 @@ def format(code):
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.~?":
+		elif i in "[],.:~?":
 			result += reorder(fragment) + i
 			fragment = ""
 

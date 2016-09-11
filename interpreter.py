@@ -1,11 +1,14 @@
 #!/usr/bin/python3
 
-# Интерпретатор работает в дебажном режиме: по команде `~` дампит память в стандартный поток ошибок, команда `?` завершает программу
+# Интерпретатор работает в дебажном режиме:
+# - команда `:` печатает шестнадцатеричное представление байта в стандартный поток ошибок;
+# - `~` дампит туда же память;
+# - `?` завершает программу.
 
 maximum_code_length = 2 ** 20
 memory_length = 2 ** 20
 
-def interpret(code, memory, read, write, debug = None):
+def interpret(code, memory, read, write, debug = None, debug_write = None):
 	loops = {}
 	stack = []
 
@@ -56,10 +59,12 @@ def interpret(code, memory, read, write, debug = None):
 				pointer += 1
 				last_pointer = max(last_pointer, pointer)
 			elif debug is not None:
-				if instruction == "?":
-					position = len(code) - 1
+				if instruction == ":":
+					debug_write(memory[pointer])
 				elif instruction == "~":
 					debug(position + 1, pointer, last_pointer, instructions_count)
+				elif instruction == "?":
+					position = len(code) - 1
 
 			position += 1
 			instructions_count += 1
@@ -68,7 +73,6 @@ def interpret(code, memory, read, write, debug = None):
 
 if __name__ == "__main__":
 	from sys import argv, stdin, stdout, stderr
-	import binascii
 
 	with open(argv[1]) as file:
 		code = file.read(maximum_code_length)
@@ -86,8 +90,7 @@ if __name__ == "__main__":
 		stdout.buffer.flush()
 
 	def debug(position, pointer, last_pointer, instructions_count):
-		dump = binascii.hexlify(memory[: last_pointer + 1]).decode()
-		dump = " ".join(dump[j: j + 2] + ("<" if pointer == j // 2 else "") for j in range(0, len(dump), 2))
+		dump = " ".join("{:02x}".format(memory[i]) + ("<" if i == pointer else "") for i in range(last_pointer + 1))
 
 		stderr.write("{}\n{}\n".format(dump, "=" * 16))
 		stderr.write("Позиция в коде: {}\n".format(position))
@@ -96,4 +99,8 @@ if __name__ == "__main__":
 		stderr.write("Использованно ячеек: {}\n\n".format(last_pointer + 1))
 		stderr.flush()
 
-	interpret(code, memory, read, write, debug)
+	def debug_write(byte):
+		stderr.write("{:02x}\n".format(byte))
+		stderr.flush()
+
+	interpret(code, memory, read, write, debug, debug_write)
