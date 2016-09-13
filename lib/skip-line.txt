@@ -23,7 +23,7 @@
 			#INPUT
 
 			#INCREASE -10
-			#SUB_TO 1 <>-1
+			#SUBTRACT_TO 1 <>-1
 
 			#IF
 				#ZERO <>-2

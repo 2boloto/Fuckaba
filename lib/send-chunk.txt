@@ -18,7 +18,7 @@
 // <  0
 // <  0
 
-#INCREASE 255
+#INCREASE 16
 #WHILE
 	#ADD_TO_SAVE 1 2
 
@@ -43,7 +43,7 @@
 			#INCREASE 1 <>1
 		#END
 
-		#SUB_TO -1
+		#SUBTRACT_TO -1
 		#ADD_TO_SAVE -8 <>-1
 
 		#VISIT -10

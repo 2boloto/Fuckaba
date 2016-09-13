@@ -62,7 +62,7 @@ def interpret(code, memory, read, write, debug = None, debug_write = None):
 				if instruction == ":":
 					debug_write(memory[pointer])
 				elif instruction == "~":
-					debug(position + 1, pointer, last_pointer, instructions_count)
+					debug(memory, position + 1, pointer, last_pointer, instructions_count)
 				elif instruction == "?":
 					position = len(code) - 1
 
@@ -71,36 +71,34 @@ def interpret(code, memory, read, write, debug = None, debug_write = None):
 
 	return pointer, last_pointer, instructions_count
 
-if __name__ == "__main__":
-	from sys import argv, stdin, stdout, stderr
+def read():
+	return sys.stdin.buffer.read(1)[0]
 
-	with open(argv[1]) as file:
+def write(byte):
+	sys.stdout.buffer.write(bytes([byte]))
+	sys.stdout.buffer.flush()
+
+def debug(memory, position, pointer, last_pointer, instructions_count):
+	dump = " ".join("{:02x}".format(memory[i]) + ("<" if i == pointer else "") for i in range(last_pointer + 1))
+
+	sys.stderr.write("{}\n{}\n".format(dump, "=" * 16))
+	sys.stderr.write("Позиция в коде: {}\n".format(position))
+	sys.stderr.write("Указатель: {}\n".format(pointer))
+	sys.stderr.write("Выполнено инструкций: {}\n".format(instructions_count))
+	sys.stderr.write("Использованно ячеек: {}\n\n".format(last_pointer + 1))
+	sys.stderr.flush()
+
+def debug_write(byte):
+	sys.stderr.write("{:02x}\n".format(byte))
+	sys.stderr.flush()
+
+if __name__ == "__main__":
+	import sys
+
+	with open(sys.argv[1]) as file:
 		code = file.read(maximum_code_length)
 
 		if file.read(1) != "":
 			raise Exception("Слишком много кода")
 
-	memory = bytearray(memory_length)
-
-	def read():
-		return stdin.buffer.read(1)[0]
-
-	def write(byte):
-		stdout.buffer.write(bytes([byte]))
-		stdout.buffer.flush()
-
-	def debug(position, pointer, last_pointer, instructions_count):
-		dump = " ".join("{:02x}".format(memory[i]) + ("<" if i == pointer else "") for i in range(last_pointer + 1))
-
-		stderr.write("{}\n{}\n".format(dump, "=" * 16))
-		stderr.write("Позиция в коде: {}\n".format(position))
-		stderr.write("Указатель: {}\n".format(pointer))
-		stderr.write("Выполнено инструкций: {}\n".format(instructions_count))
-		stderr.write("Использованно ячеек: {}\n\n".format(last_pointer + 1))
-		stderr.flush()
-
-	def debug_write(byte):
-		stderr.write("{:02x}\n".format(byte))
-		stderr.flush()
-
-	interpret(code, memory, read, write, debug, debug_write)
+	interpret(code, bytearray(memory_length), read, write, debug, debug_write)

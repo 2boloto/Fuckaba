@@ -4,8 +4,10 @@
 // >  0
 // >  0
 // >  0
+// >  0
 
 // <- 0
+// <  0
 // <  0
 // <  0
 // <  0
@@ -15,7 +17,7 @@
 #DATABASE_GO_START
 
 #INCLUDE "send-database.txt"
-#ZERO <>1
+#ZERO <>4
 
 #DATABASE_GO_NEXT
 #DATABASE_GO_END

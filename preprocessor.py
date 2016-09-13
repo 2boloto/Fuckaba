@@ -459,7 +459,7 @@ def add_to_command(root, destination):
 	return "[-" + visit(destination, "+") + "]"
 
 @command
-def sub_to_command(root, destination):
+def subtract_to_command(root, destination):
 	"""
 		Отнимает данную ячейку от указанной.
 
@@ -499,7 +499,7 @@ def add_to_save_command(root, destination, buffer = 1):
 	return "[-" + visit(buffer, "+") + visit(destination, "+") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
 @command
-def sub_to_save_command(root, destination, buffer = 1):
+def subtract_to_save_command(root, destination, buffer = 1):
 	"""
 		Отнимает от указанной ячейки данную, сохраняя её значение с помощью временной.
 
@@ -656,6 +656,45 @@ def network_close_command(root):
 
 	return "+++.---"
 
+# Линия
+
+"""
+	Последовательность ячеек со значением 1, по краям которой нули.
+"""
+
+@command
+def line_create_command(root, length):
+	"Создаёт линию указанной длины, которая не может быть меньше 2"
+
+	length -= 2
+
+	result = ">"
+
+	while length != 0:
+		part = min(length, 255)
+		length -= part
+		result += increase(part) + "[[->+<]+>-]"
+
+	return result
+
+@command
+def line_go_start_command(root):
+	"Переходит к началу линии"
+
+	return "<[<]"
+
+@command
+def line_go_end_command(root):
+	"Переходит к концу линии"
+
+	return ">[>]"
+
+@command
+def line_clear_command(root):
+	"Очищает линию. Указатель должен быть на конце"
+
+	return "<[-<]"
+
 # Массив
 
 """
@@ -689,16 +728,17 @@ def network_close_command(root):
 """
 
 @command
-def array_go_end_command(root):
-	"Перемещается в конец массива"
+def array_create_command(root, length):
+	"Создаёт пустой массив указанной длины"
 
-	return ">>[>>]"
+	result = ">"
 
-@command
-def array_go_start_command(root):
-	"Перемещается в начало массива"
+	while length != 0:
+		part = min(length, 255)
+		length -= part
+		result += increase(part) + "[>+<[->>+<<]>>-]"
 
-	return "<<[<<]"
+	return result + ">"
 
 @command
 def array_set_command(root, string):
@@ -715,6 +755,18 @@ def array_set_command(root, string):
 	)
 
 @command
+def array_go_end_command(root):
+	"Перемещается в конец массива"
+
+	return ">>[>>]"
+
+@command
+def array_go_start_command(root):
+	"Перемещается в начало массива"
+
+	return "<<[<<]"
+
+@command
 def array_clear_command(root):
 	"Очищает массив. Указатель должен быть на конце"
 
@@ -729,14 +781,14 @@ def array_foreach_block(root):
 # База данных
 
 """
-	База загружается в память, как последовательность массивов по 255 байтов длиной, последний может дополняться переводами строки. После каждого массива:
+	База загружается в память, как последовательность массивов по 16 байтов длиной, последний может дополняться переводами строки. После каждого массива:
 
-	>  0, если это первый массив, иначе 1
 	>  0, если это последний массив, иначе 1
-	>  x1 - номер поста, который начинается в этом массиве, либо ноль. Число хранится, как 4 байта, по одной десятичной цифре в каждом, старшая спереди. Цифры хранятся в виде значений от 0 до 9
+	>  0, если это первый массив, иначе 1
+	>  0, если в данном массиве начинается пост, иначе 1
+	>  x1 - номер поста в этом массиве, либо ноль. Число хранится, как 3 байта, по одной десятичной цифре в каждом, старшая спереди. Цифры хранятся в виде значений от 0 до 9
 	>  x2
 	>  x3
-	>  x4
 	>  0, если этот массив не надо отправлять в сеть, иначе 1
 	>- 0
 	>  0
@@ -746,7 +798,7 @@ def array_foreach_block(root):
 
 	Перед базой данных должно быть 5 нулей.
 
-	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд. Все функции требуют и возвращают указатель на четвёртой ячейке из этого списка.
+	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд.
 """
 
 @command
@@ -760,16 +812,16 @@ def database_load_command(root, path):
 
 	result = ">>>>>"
 
-	for i in range(0, len(data), 255):
-		chunk = data[i: i + 255]
-		chunk += b"\n" * (255 - len(chunk))
+	for i in range(0, len(data), 16):
+		chunk = data[i: i + 16]
+		chunk += b"\n" * (16 - len(chunk))
 
 		first = i == 0
-		last = i >= len(data) - 255
+		last = i >= len(data) - 16
 
 		result += (
 			array_set_command(root, chunk) + ">>[>>]>>" +
-			("" if first else "+") + ">" + ("" if last else "+") + ">>>>>+>>>>>>"
+			("" if last else "+") + ">" + ("" if first else "+") + ">+>>>>+>>>>>>"
 		)
 
 	return result + "<<<<<"
@@ -790,21 +842,35 @@ def database_go_back_command(root):
 def database_go_end_command(root):
 	"Переходит к последнему чанку"
 
-	return "<<<<<<[>>>>>>" + database_go_next_command(root) + "<<<<<<]>>>>>>"
+	return "<<<<<<<[>>>>>>>" + database_go_next_command(root) + "<<<<<<<]>>>>>>>"
 
 @command
 def database_go_start_command(root):
 	"Переходит к первому чанку"
 
-	return "<<<<<<<[>>>>>>>" + database_go_back_command(root) + "<<<<<<<]>>>>>>>"
+	return "<<<<<<[>>>>>>" + database_go_back_command(root) + "<<<<<<]>>>>>>"
 
 @block
 def database_foreach_block(root):
-	"Цикл по каждому чанку. Указатель остаётся на последнем"
+	"""
+		Цикл по каждому чанку. Указатель остаётся на последнем.
+
+		>- 0
+		>  0
+
+		<- 0
+		<  0
+
+		>- 0
+		>  0
+
+		<- 0
+		<  0
+	"""
 
 	return (
 		"+[-",
-		"<<<<<<[>>>>>>" + database_go_next_command(root) + "+<<<<<<[->>>>>>>+<<<<<<<]]>>>>>>>[-<<<<<<<+>>>>>>>]<]"
+		"<<<<<<<[>>>>>>>" + database_go_next_command(root) + "+<<<<<<<[->>>>>>>>+<<<<<<<<]]>>>>>>>>[-<<<<<<<<+>>>>>>>>]<]"
 	)
 
 # Препроцессор

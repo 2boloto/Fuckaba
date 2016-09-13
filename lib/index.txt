@@ -2,14 +2,14 @@
 
 // См. `start-receiving.txt`. Этот модуль сам вызывает `end-receiving.txt`.
 
-// >  базы данных
 // >- r
 // >  0
 // >  0
 // >  0
+// >  0
 
-// <  базы данных
 // <- 0
+// <  0
 // <  0
 // <  0
 // <  0
@@ -19,4 +19,4 @@
 #DATABASE_GO_START
 
 #INCLUDE "send-database.txt"
-#ZERO <>1
+#ZERO <>5

@@ -1,0 +1,71 @@
+// Удаляет чанк из БД.
+
+// См. `append-database.txt`.
+
+// >- 0
+// >  0
+// >  0
+// >  0
+// >  165 байтов, которые надо спасти
+
+// <- 0
+// <  0
+// <  0
+// <  0
+// <  165 спасённых байтов
+
+// Чтобы увеличить количество спасаемых байтов, надо добавить к `#GO -(5 + n)` и `#INCREASE n <>-1`, но не больше 255 в последней инструкции.
+
+#INCREASE 1 <>1
+#INCREASE 1
+#ZERO <>-1
+#INCREASE 1 <>-1
+#ZERO <>-2
+#INCREASE 1 <>-2
+#ZERO <>-3
+#INCREASE 1 <>-3
+#ZERO <>-4
+#INCREASE 1 <>-4
+#ZERO <>-5
+#INCREASE 1 <>-5
+#ZERO <>-6
+#INCREASE 1 <>-6
+#ZERO <>-7
+#INCREASE 1 <>-7
+#INCREASE 1 <>-8
+#INCREASE 1 <>-9
+#GO -11
+
+#WHILE
+	#ZERO <>1
+	#INCREASE 1 <>1
+	#GO -2
+#END
+
+#INCREASE 1 <>1
+#LINE_GO_END
+
+#INCREASE 165 <>1
+#FOR <>1
+	#FOR <>2
+		#LINE_GO_START
+		#INCREASE 1 <>-1
+		#LINE_GO_END
+	#END
+
+	#LINE_GO_START
+	#GO 1
+	#INCREASE -1
+
+	#LINE_GO_END
+	#INCREASE 1
+	#GO 1
+
+	#ADD_TO 1
+#END
+
+#LINE_CLEAR
+
+#GO -170
+
+#INCREASE -1 <>-7

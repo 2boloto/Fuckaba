@@ -2,34 +2,48 @@
 
 // См. `start-receiving.txt`. Этот модуль сам вызывает `end-receiving.txt`.
 
-// >  базы данных
 // >- r
 // >  куча нулей
 
-// <  базы данных
 // <- 1, если хорошо, иначе 0
 // <  куча нулей
 
-#ADD_TO 1
-#INCLUDE "receive-boundary.txt" <>1
+#ADD_TO 4
+#INCLUDE "receive-boundary.txt" <>4
 
-#ADD_TO -3 <>3
+#ADD_TO -3 <>6
 
-#VISIT 1
+#VISIT 4
 	#IF_SAVE
 		#INCLUDE "skip-head.txt"
 	#END
-#END
 
-#BOOL_IF
-	#VISIT 1
+	#BOOL_IF_L <>-1
 		#IF_SAVE
 			#INCREASE 1 <>3
 			#INCREASE 1 <>5
 
+			#INCLUDE "start-chunk.txt" <>-4
+			#INCREASE -1 <>-9
+
 			#WHILE <>3
 				#INCLUDE "receive-substring.txt"
-				#ZERO <>4
+
+				#IF_SAVE_BACK <>3
+					#ADD_TO -5 <>4
+
+					#INCLUDE "append-database.txt" <>-4
+				#END
+			#END
+
+			#INCLUDE "end-chunk.txt" <>-4
+
+			#UNLESS_SAVE
+				#WHILE <>1
+					#INCLUDE "remove-chunk.txt" <>-4
+				#END
+
+				#INCLUDE "remove-chunk.txt" <>-4
 			#END
 		#END
 
@@ -37,7 +51,7 @@
 	#END
 #END
 
-#ADD_TO -1 <>1
+#ADD_TO -4 <>4
 
 #INCLUDE "end-receiving.txt"
 

@@ -4,11 +4,13 @@
 // >  0
 // >  0
 // >  0
+// >  0
 
 // <- 0
+// <  0
+// <  0
+// <  0
 // <  1, если успешно, иначе 0
-// <  0
-// <  0
 
 #DATABASE_FOREACH
 	#IF_SAVE <>-1
@@ -16,9 +18,9 @@
 
 		#BOOL_UNLESS
 			#DATABASE_GO_END
-			#INCREASE -1 <>1
+			#INCREASE -1 <>4
 		#END
 	#END
 #END
 
-#INCREASE 1 <>1
+#INCREASE 1 <>4
