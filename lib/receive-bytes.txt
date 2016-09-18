@@ -1,0 +1,37 @@
+// Получает последовательность байтов из сети и сохраняет их в виде массива.
+
+// См. `start-receiving.txt`.
+
+// >- r
+// >  0
+// >  0
+// >  длина
+// >  место для массива
+
+// <- новый r, если хорошо, иначе 0
+// <  0
+// <  0
+// <  0
+// <  массив с полученными данными, если всё нормально, иначе нули
+
+#FOR_L <>3
+	#INCLUDE "receive-byte.txt"
+
+	#IF_SAVE_FLAG
+		#VISIT 4
+			#ARRAY_GO_END
+			#INCREASE 1
+			#INPUT <>1
+			#ARRAY_GO_START
+		#END
+	#END
+
+	#ELSE
+		#ZERO <>3
+
+		#VISIT 4
+			#ARRAY_GO_END
+			#ARRAY_CLEAR
+		#END
+	#END
+#END

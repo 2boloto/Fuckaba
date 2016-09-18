@@ -29,7 +29,7 @@
 		#INCREASE 0
 		#NOT_AND_TO_SAVE 3 1
 		#INCREASE 9
-		#NOT_AND_TO 4 1
+		#NOT_AND_TO 4
 	#END
 
 	#INCLUDE "receive-byte.txt"
@@ -42,7 +42,7 @@
 			#INCREASE 0
 			#NOT_AND_TO_SAVE 3 1
 			#INCREASE 10
-			#NOT_AND_TO 4 1
+			#NOT_AND_TO 4
 		#END
 
 		#INCLUDE "receive-byte.txt"
@@ -55,7 +55,7 @@
 				#INCREASE 0
 				#NOT_AND_TO_SAVE 3 1
 				#INCREASE -1
-				#NOT_AND_TO 4 1
+				#NOT_AND_TO 4
 			#END
 
 			#INCLUDE "receive-byte.txt"
@@ -68,7 +68,7 @@
 					#INCREASE 0
 					#NOT_AND_TO_SAVE 3 1
 					#INCREASE 52
-					#NOT_AND_TO 4 1
+					#NOT_AND_TO 4
 				#END
 
 				#INCLUDE "receive-byte.txt"
@@ -81,7 +81,7 @@
 						#INCREASE 0
 						#NOT_AND_TO_SAVE 3 1
 						#INCREASE -15
-						#NOT_AND_TO 4 1
+						#NOT_AND_TO 4
 					#END
 
 					#INCLUDE "receive-byte.txt"
@@ -94,7 +94,7 @@
 							#INCREASE 0
 							#NOT_AND_TO_SAVE 3 1
 							#INCREASE 15
-							#NOT_AND_TO 4 1
+							#NOT_AND_TO 4
 						#END
 
 						#INCLUDE "receive-byte.txt"
@@ -107,7 +107,7 @@
 								#INCREASE -65
 								#NOT_AND_TO_SAVE 3 1
 								#INCREASE 25
-								#NOT_AND_TO 4 1
+								#NOT_AND_TO 4
 							#END
 
 							#INCLUDE "receive-byte.txt"
@@ -120,7 +120,7 @@
 									#INCREASE 40
 									#NOT_AND_TO_SAVE 3 1
 									#INCREASE -52
-									#NOT_AND_TO 4 1
+									#NOT_AND_TO 4
 								#END
 
 								#ADD_TO 6

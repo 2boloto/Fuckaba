@@ -15,14 +15,31 @@
 			#ADD_TO -6 <>6
 
 			#IF_SAVE
-				#UNLESS_SAVE <>5
-					#BOOL_IF_L <>3
-						#INCLUDE "lib/post.txt"
+				#ADD_TO_SAVE -1 -2 <>3
+				#ADD_TO_SAVE -2 -3 <>4
+
+				#BOOL_IF_L <>2
+					#ADD_TO 15
+
+					#INCLUDE "lib/receive-boundary.txt" <>15
+
+					#BOOL_IF_L <>17
+						#INCLUDE "lib/skip-head.txt" <>15
+
+						#IF_SAVE <>15
+							#BOOL_IF_L <>3
+								#INCLUDE "lib/post.txt"
+							#END
+
+							#BOOL_IF_L <>4
+								#INCLUDE "lib/admin.txt"
+							#END
+						#END
+
+						#INCLUDE "lib/clear-boundary.txt" <>15
 					#END
 
-					#BOOL_IF_L <>4
-						#INCLUDE "lib/admin.txt"
-					#END
+					#INCLUDE "lib/end-receiving.txt" <>15
 
 					#IF_L
 						#INCLUDE "lib/redirect.txt"
