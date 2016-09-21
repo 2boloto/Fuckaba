@@ -44,7 +44,7 @@
 		#END
 
 		#SUBTRACT_TO -1
-		#ADD_TO_SAVE -8 <>-1
+		#ADD_TO_SAVE -8 1 <>-1
 
 		#VISIT -10
 			#ARRAY_GO_START

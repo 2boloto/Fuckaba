@@ -497,7 +497,7 @@ def subtract_to_command(root, destination):
 	return "[-" + visit(destination, "-") + "]"
 
 @command
-def add_to_save_command(root, destination, buffer = 1):
+def add_to_save_command(root, destination, buffer):
 	"""
 		Складывает с указанной ячейкой данную, сохраняя её значение с помощью временной.
 
@@ -519,7 +519,7 @@ def add_to_save_command(root, destination, buffer = 1):
 	return "[-" + visit(buffer, "+") + visit(destination, "+") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
 @command
-def subtract_to_save_command(root, destination, buffer = 1):
+def subtract_to_save_command(root, destination, buffer):
 	"""
 		Отнимает от указанной ячейки данную, сохраняя её значение с помощью временной.
 
@@ -577,6 +577,24 @@ def bool_not_to_command(root, destination):
 	"""
 
 	return visit(destination, "+") + "[-" + visit(destination, "-") + "]"
+
+@command
+def bool_to_command(root, destination):
+	"""
+		Конвертирует данную ячейку в булево значение.
+
+		>- a
+		> ...
+		>  0
+
+		<- 0
+		< ...
+		<  !!a
+
+		Сдвиг может быть любым, но не нулевым.
+	"""
+
+	return "[[-]" + visit(destination, "+") + "]"
 
 @command
 def not_and_to_command(root, destination):
@@ -817,6 +835,12 @@ def array_foreach_block(root):
 	"Цикл по каждому элементу массива. Указатель остаётся на конце"
 
 	return ">>[", ">>]"
+
+@block
+def array_foreach_back_block(root):
+	"Цикл по каждому элементу массива в обратном порядке. Указатель остаётся на начале"
+
+	return "<<[", "<<]"
 
 # База данных
 

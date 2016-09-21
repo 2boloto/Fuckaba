@@ -1,12 +1,29 @@
-// Очищает массив или то, что от него осталось после вызова `find-boundary.txt`.
+// Очищает результат вызова `find-boundary.txt` или то, что ему нужно было подать на вход.
 
 // >- результат вызова
 
 // <- r
 // <  соответствующее количество нулей
 
+#ZERO <>4
+
+#BOOL_IF <>3
+	#BOOL_UNLESS <>5
+		#VISIT 7
+			#INCREASE -1
+
+			#ARRAY_GO_END
+			#INCREASE 1
+			#ZERO <>2
+			#INCREASE 1 <>2
+			#ARRAY_GO_START
+		#END
+	#END
+#END
+
 #VISIT 7
 	#ARRAY_GO_END
+	#ZERO <>1
 	#ARRAY_GO_END
 	#ARRAY_CLEAR
 	#ARRAY_CLEAR

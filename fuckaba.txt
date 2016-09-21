@@ -41,7 +41,7 @@
 
 					#INCLUDE "lib/end-receiving.txt" <>15
 
-					#IF_L
+					#IF_L <>5
 						#INCLUDE "lib/redirect.txt"
 					#END
 				#END

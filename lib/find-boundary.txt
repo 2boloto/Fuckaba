@@ -149,7 +149,7 @@
 
 		#ADD_TO -1 <>1
 
-		#BOOL_IF_L <>3
+		#BOOL_IF <>3
 			#INCREASE 1
 			#INCREASE -1 <>2
 			#INCREASE -1 <>5
