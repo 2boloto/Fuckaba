@@ -33,16 +33,85 @@
 	#INCREASE 1 <>18
 	#INCREASE 1 <>20
 
+	#INCREASE -1 <>5
+
 	#WHILE <>18
 		#INCLUDE "find-boundary.txt" <>15
 
 		#IF_SAVE_BACK <>18
-			#ADD_TO -15 <>19
+			#INCREASE 1 <>5
+
+			#FOR <>19
+				#INCREASE 1 <>2
+				#INCREASE 1 <>3
+				#INCREASE 1 <>4
+				#INCREASE 1 <>6
+			#END
+
+			#INCREASE -60 <>2
+			#INCREASE -62 <>3
+			#INCREASE -38 <>4
+
+			#UNLESS_BACK <>2
+				#INCREASE -1 <>6
+				#INCREASE 1 <>7
+				#INCREASE 116 <>8
+				#INCREASE 1 <>9
+				#INCREASE 108 <>10
+				#INCREASE 1 <>11
+				#INCREASE 38 <>12
+			#END
+
+			#UNLESS_BACK <>3
+				#INCREASE -3 <>6
+				#INCREASE 1 <>7
+				#INCREASE 116 <>8
+				#INCREASE 1 <>9
+				#INCREASE 103 <>10
+				#INCREASE 1 <>11
+				#INCREASE 38 <>12
+			#END
+
+			#UNLESS_BACK <>4
+				#INCREASE 21 <>6
+				#INCREASE 1 <>7
+				#INCREASE 112 <>8
+				#INCREASE 1 <>9
+				#INCREASE 109 <>10
+				#INCREASE 1 <>11
+				#INCREASE 97 <>12
+				#INCREASE 1 <>13
+				#INCREASE 38 <>14
+
+				#ADD_TO 1 <>15
+			#END
+		#END
+
+		#WHILE <>5
+			#VISIT 3
+				#ARRAY_GO_END
+
+				#FOR <>-1
+					#ARRAY_GO_START
+					#INCREASE 1 <>1
+					#ARRAY_GO_END
+				#END
+
+				#GO -2
+				#INCREASE -1
+
+				#ARRAY_GO_START
+			#END
+
 			#INCLUDE "append-database.txt"
 		#END
+
+		#ADD_TO -1 <>16
 	#END
 
 	#INCLUDE "end-chunk.txt"
+
+	#INCREASE 1 <>5
 
 	#UNLESS_SAVE <>15
 		#INCREASE -1 <>5
