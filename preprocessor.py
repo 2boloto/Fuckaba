@@ -914,6 +914,26 @@ def database_go_start_command(root):
 
 	return "<<<<<<[>>>>>>" + database_go_back_command(root) + "<<<<<<]>>>>>>"
 
+@command
+def database_extend_chunk_command(root, string):
+	"""
+		Добавляет в чанк заданные байты. В нём должно быть достаточно для места, чтобы их вместить.
+
+		См. `append-database.txt`.
+	"""
+
+	if type(string) is str:
+		string = string.encode()
+
+	result = "<<<<<<<<<[<<]"
+
+	for i in string:
+		result += "+>" + increase(i) + ">-"
+
+	result += ">>[>>]>>>>>>>" + increase(-len(string))
+
+	return result
+
 @block
 def database_foreach_block(root):
 	"""
