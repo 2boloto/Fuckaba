@@ -25,14 +25,14 @@
 #INCREASE -27 <>1
 #BOOL_TO 4 <>1
 
-#IF_SAVE <>5
-	#INCLUDE "create-chunk.txt"
-	#INCREASE -1 <>-5
-	#INCLUDE "increment-counter.txt"
+#INCLUDE "create-chunk.txt"
+#INCREASE -1 <>-5
+#INCLUDE "increment-counter.txt"
 
+#IF_SAVE <>5
 	#DATABASE_EXTEND_CHUNK "<section><h1>№"
 	#INCLUDE "create-chunk.txt"
-	#DATABASE_EXTEND_CHUNK "    </h1>  <pre>"
+	#DATABASE_EXTEND_CHUNK "    </h1><object"
 
 	#DATABASE_GO_BACK
 
@@ -56,6 +56,142 @@
 	#END
 
 	#DATABASE_GO_NEXT
+
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "             typ"
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "e = \"image/jpeg\""
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "         data = "
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "\"data:applicatio"
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "n/octet-stream;,"
+
+	#INCREASE 1 <>1
+
+	#INCREASE 1 <>18
+	#INCREASE 1 <>20
+
+	#INCREASE -1 <>5
+
+	#WHILE <>18
+		#INCLUDE "find-boundary.txt" <>15
+
+		#IF_SAVE_BACK_FLAG <>18
+			#BOOL_IF_L <>1
+				#FOR <>19
+					#INCREASE 1 <>1
+					#INCREASE 1 <>2
+					#INCREASE 1 <>6
+				#END
+
+				#INCREASE -137 <>1
+				#INCREASE -71 <>2
+
+				#UNLESS <>2
+					#DATABASE_GO_BACK
+					#DATABASE_GO_BACK
+					#DATABASE_GO_BACK
+
+					#INCREASE -2 <>-10
+					#INCREASE -69 <>-12
+					#INCREASE 1 <>-14
+					#INCREASE -7 <>-16
+					#INCREASE -3 <>-18
+
+					#DATABASE_GO_NEXT
+					#DATABASE_GO_NEXT
+					#DATABASE_GO_NEXT
+				#END
+
+				#UNLESS <>1
+					#DATABASE_GO_BACK
+					#DATABASE_GO_BACK
+					#DATABASE_GO_BACK
+
+					#INCREASE -2 <>-10
+					#INCREASE -69 <>-12
+					#INCREASE 2 <>-14
+					#INCREASE -2 <>-16
+					#INCREASE 6 <>-18
+
+					#DATABASE_GO_NEXT
+					#DATABASE_GO_NEXT
+					#DATABASE_GO_NEXT
+				#END
+
+				#INCLUDE "create-chunk.txt"
+			#END
+
+			#ADD_TO -13 <>19
+
+			#SPLIT_BYTE <>4
+			#HEX <>6
+			#HEX <>8
+
+			#INCREASE 1 <>5
+			#INCREASE 1 <>7
+			#INCREASE 1 <>9
+			#INCREASE 37 <>10
+		#END
+
+		#ELSE_BACK <>18
+			#INCREASE 1 <>5
+			#INCREASE 34 <>6
+		#END
+
+		#WHILE <>5
+			#VISIT 3
+				#ARRAY_GO_END
+
+				#FOR <>-1
+					#ARRAY_GO_START
+					#INCREASE 1 <>1
+					#ARRAY_GO_END
+				#END
+
+				#GO -2
+				#INCREASE -1
+
+				#ARRAY_GO_START
+			#END
+
+			#INCLUDE "append-database.txt"
+		#END
+	#END
+
+	#INCREASE 1 <>5
+
+	#INCLUDE "end-chunk.txt"
+	#INCLUDE "create-chunk.txt"
+	#DATABASE_EXTEND_CHUNK "></object><pre>"
+
+	#UNLESS_SAVE <>15
+		#INCREASE -1 <>5
+	#END
+#END
+
+#IF_SAVE <>5
+	#INCLUDE "skip-head.txt" <>15
+
+	#UNLESS_SAVE <>15
+		#INCREASE -1 <>5
+	#END
+#END
+
+#IF_SAVE <>5
+	#VISIT 22
+		#ARRAY_GO_END
+		#INCREASE 35 <>-1
+		#INCREASE 32 <>-3
+
+		#ARRAY_FOREACH_BACK
+			#INCREASE -1
+			#INCREASE 1 <>2
+			#ADD_TO 2 <>1
+		#END
+	#END
 
 	#INCREASE 1 <>18
 	#INCREASE 1 <>20
@@ -148,22 +284,26 @@
 		#ADD_TO -1 <>16
 	#END
 
+	#INCREASE 1 <>5
+
 	#INCLUDE "end-chunk.txt"
 	#INCLUDE "create-chunk.txt"
-	#DATABASE_EXTEND_CHUNK "></section>\n\n\n\n\n"
-
-	#INCREASE 1 <>5
+	#DATABASE_EXTEND_CHUNK "></section>"
 
 	#UNLESS_SAVE <>15
 		#INCREASE -1 <>5
+	#END
+#END
 
-		#INCREASE 1 <>4
-		#FOR <>4
-			#BOOL_IF <>-5
-				#INCREASE 1 <>4
-			#END
+#INCLUDE "end-chunk.txt"
 
-			#INCLUDE "remove-chunk.txt"
+#UNLESS_SAVE <>5
+	#INCREASE 1 <>4
+	#FOR <>4
+		#BOOL_IF <>-5
+			#INCREASE 1 <>4
 		#END
+
+		#INCLUDE "remove-chunk.txt"
 	#END
 #END

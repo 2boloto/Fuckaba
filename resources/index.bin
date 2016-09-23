@@ -52,11 +52,11 @@ Content-Type: text/html
 	<p>Доска сможет принять не более 999 постов.</p>
 
 	<form method = "post" enctype = "multipart/form-data">
+		<p><label>Картинка: <input name = "picture" type = "file" accept = "image/jpeg,image/png,image/gif" /></label></p>
+
 		<p><label for = "message">Сообщение:</label></p>
 
 		<p><textarea id = "message" name = "message"></textarea></p>
-
-		<p><label>Картинка: <input name = "picture" type = "file" accept = "image/jpeg,image/png,image/gif" /></label></p>
 
 		<p><input type = "submit" value = "Отправить" /></p>
 	</form>
