@@ -136,6 +136,8 @@
 			#INCREASE 37 <>10
 		#END
 
+		#ZERO <>1
+
 		#ELSE_BACK <>18
 			#INCREASE 1 <>5
 			#INCREASE 34 <>6
