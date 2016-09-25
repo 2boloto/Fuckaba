@@ -181,18 +181,17 @@
 		#END
 	#END
 
-	#ZERO <>16
+	#BOOL_NOT_TO -11 <>16
+
 	#ZERO <>17
 	#ZERO <>18
-
-	#INCREASE 1 <>5
 
 	#INCLUDE "end-chunk.txt"
 	#INCLUDE "create-chunk.txt"
 	#DATABASE_EXTEND_CHUNK "></object><pre>"
 
 	#UNLESS_SAVE <>20
-		#INCREASE -1 <>5
+		#ZERO <>5
 	#END
 #END
 
@@ -324,18 +323,17 @@
 		#END
 	#END
 
-	#ZERO <>16
+	#BOOL_NOT_TO -11 <>16
+
 	#ZERO <>17
 	#ZERO <>18
-
-	#INCREASE 1 <>5
 
 	#INCLUDE "end-chunk.txt"
 	#INCLUDE "create-chunk.txt"
 	#DATABASE_EXTEND_CHUNK "></section>"
 
 	#UNLESS_SAVE <>20
-		#INCREASE -1 <>5
+		#ZERO <>5
 	#END
 #END
 
