@@ -41,7 +41,6 @@ def translate(code, memory_length, safe = True):
 		raise Exception("Незакрытая скобка")
 
 	return """
-		#include <stdlib.h>
 		#include <stdint.h>
 		#include <stdbool.h>
 
@@ -87,6 +86,8 @@ def stdio():
 
 def run():
 	return """
+		#include <stdlib.h>
+
 		int main(void) {
 			freopen(NULL, "rb", stdin);
 

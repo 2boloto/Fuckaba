@@ -2,7 +2,7 @@
 
 // См. `start-receiving.txt`.
 
-// >- 15 нулей
+// >- 20 нулей
 // >  r
 // >  8 нулей
 // >  массив с разделителем
@@ -14,11 +14,11 @@
 // <  0
 // <  0
 // <  1, если хорошо, иначе 0
-// <  9 нулей
+// <  14 нулей
 // <  результат поиска разделителя
 // <  куча нулей
 
-#ADD_TO -15 <>15
+#ADD_TO -20 <>20
 
 #INCREASE 8 <>3
 #INCLUDE "receive-bytes.txt"
@@ -27,34 +27,34 @@
 	#ARRAY_COMPARE "password" <>3
 #END
 
-#ADD_TO 15
+#ADD_TO 20
 #ADD_TO -1 <>6
 
 #IF_SAVE <>5
-	#INCREASE 1 <>18
-	#INCREASE 1 <>20
+	#INCREASE 1 <>23
+	#INCREASE 1 <>25
 
-	#INCLUDE "find-boundary.txt" <>15
+	#INCLUDE "find-boundary.txt" <>20
 
-	#IF_SAVE_BACK <>18
+	#IF_SAVE_BACK <>23
 		#INCREASE -1 <>5
 	#END
 
-	#UNLESS_SAVE <>15
+	#UNLESS_SAVE <>20
 		#ZERO <>5
 	#END
 #END
 
 #IF_SAVE <>5
-	#INCLUDE "skip-head.txt" <>15
+	#INCLUDE "skip-head.txt" <>20
 
-	#UNLESS_SAVE <>15
+	#UNLESS_SAVE <>20
 		#INCREASE -1 <>5
 	#END
 #END
 
 #IF_SAVE_BACK <>5
-	#VISIT 22
+	#VISIT 27
 		#ARRAY_GO_END
 		#INCREASE 35 <>-1
 		#INCREASE 32 <>-3
@@ -67,16 +67,16 @@
 	#END
 
 	#INCREASE -1 <>5
-	#INCREASE 4 <>14
+	#INCREASE 4 <>19
 
-	#INCREASE 1 <>18
-	#INCREASE 1 <>20
+	#INCREASE 1 <>23
+	#INCREASE 1 <>25
 
-	#FOR_L <>14
-		#INCLUDE "find-boundary.txt" <>15
+	#FOR_L <>19
+		#INCLUDE "find-boundary.txt" <>20
 
-		#IF_SAVE_BACK_FLAG <>18
-			#FOR <>19
+		#IF_SAVE_BACK_FLAG <>23
+			#FOR <>24
 				#VISIT 3
 					#ARRAY_GO_END
 					#INCREASE 1 <>1
@@ -91,20 +91,20 @@
 			#END
 		#END
 
-		#ELSE_BACK <>18
-			#ZERO <>14
+		#ELSE_BACK <>23
+			#ZERO <>19
 		#END
 	#END
 
-	#UNLESS_SAVE <>15
-		#INCREASE 1 <>14
+	#UNLESS_SAVE <>20
+		#INCREASE 1 <>19
 	#END
 
-	#BOOL_IF <>18
-		#INCREASE 1 <>14
+	#BOOL_IF <>23
+		#INCREASE 1 <>19
 	#END
 
-	#IF <>14
+	#IF <>19
 		#VISIT 3
 			#ARRAY_GO_END
 			#ARRAY_CLEAR

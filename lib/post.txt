@@ -2,7 +2,7 @@
 
 // См. `start-receiving.txt`.
 
-// >- 15 нулей
+// >- 20 нулей
 // >  r
 // >  8 нулей
 // >  массив с разделителем
@@ -14,7 +14,7 @@
 // <  0
 // <  0
 // <  1, если хорошо, иначе 0
-// <  9 нулей
+// <  14 нулей
 // <  результат поиска разделителя
 // <  куча нулей
 
@@ -70,75 +70,93 @@
 
 	#INCREASE 1 <>1
 
-	#INCREASE 1 <>18
-	#INCREASE 1 <>20
+	#INCREASE 1 <>23
+	#INCREASE 1 <>25
 
 	#INCREASE -1 <>5
 
-	#WHILE <>18
-		#INCLUDE "find-boundary.txt" <>15
+	#WHILE <>23
+		#INCLUDE "find-boundary.txt" <>20
 
-		#IF_SAVE_BACK_FLAG <>18
-			#BOOL_IF_L <>1
-				#FOR <>19
-					#INCREASE 1 <>1
-					#INCREASE 1 <>2
-					#INCREASE 1 <>6
+		#IF_SAVE_BACK_FLAG <>23
+			#INCREASE 1 <>19
+
+			#BOOL_UNLESS <>16
+				#BOOL_IF_L <>1
+					#FOR <>24
+						#INCREASE 1 <>1
+						#INCREASE 1 <>2
+						#INCREASE 1 <>6
+					#END
+
+					#INCREASE -137 <>1
+					#INCREASE -71 <>2
+
+					#UNLESS <>2
+						#DATABASE_GO_BACK
+						#DATABASE_GO_BACK
+						#DATABASE_GO_BACK
+
+						#INCREASE -2 <>-10
+						#INCREASE -69 <>-12
+						#INCREASE 1 <>-14
+						#INCREASE -7 <>-16
+						#INCREASE -3 <>-18
+
+						#DATABASE_GO_NEXT
+						#DATABASE_GO_NEXT
+						#DATABASE_GO_NEXT
+					#END
+
+					#UNLESS <>1
+						#DATABASE_GO_BACK
+						#DATABASE_GO_BACK
+						#DATABASE_GO_BACK
+
+						#INCREASE -2 <>-10
+						#INCREASE -69 <>-12
+						#INCREASE 2 <>-14
+						#INCREASE -2 <>-16
+						#INCREASE 6 <>-18
+
+						#DATABASE_GO_NEXT
+						#DATABASE_GO_NEXT
+						#DATABASE_GO_NEXT
+					#END
+
+					#INCLUDE "create-chunk.txt"
 				#END
 
-				#INCREASE -137 <>1
-				#INCREASE -71 <>2
+				#ADD_TO -18 <>24
 
-				#UNLESS <>2
-					#DATABASE_GO_BACK
-					#DATABASE_GO_BACK
-					#DATABASE_GO_BACK
+				#SPLIT_BYTE <>4
+				#HEX <>6
+				#HEX <>8
 
-					#INCREASE -2 <>-10
-					#INCREASE -69 <>-12
-					#INCREASE 1 <>-14
-					#INCREASE -7 <>-16
-					#INCREASE -3 <>-18
+				#INCREASE 1 <>5
+				#INCREASE 1 <>7
+				#INCREASE 1 <>9
+				#INCREASE 37 <>10
 
-					#DATABASE_GO_NEXT
-					#DATABASE_GO_NEXT
-					#DATABASE_GO_NEXT
+				#INCREASE -1 <>19
+				#INCREASE 1 <>17
+
+				#UNLESS_SAVE_BACK <>17
+					#INCREASE 1 <>18
+
+					#UNLESS_SAVE_BACK <>18
+						#INCREASE 1 <>19
+					#END
 				#END
-
-				#UNLESS <>1
-					#DATABASE_GO_BACK
-					#DATABASE_GO_BACK
-					#DATABASE_GO_BACK
-
-					#INCREASE -2 <>-10
-					#INCREASE -69 <>-12
-					#INCREASE 2 <>-14
-					#INCREASE -2 <>-16
-					#INCREASE 6 <>-18
-
-					#DATABASE_GO_NEXT
-					#DATABASE_GO_NEXT
-					#DATABASE_GO_NEXT
-				#END
-
-				#INCLUDE "create-chunk.txt"
 			#END
 
-			#ADD_TO -13 <>19
-
-			#SPLIT_BYTE <>4
-			#HEX <>6
-			#HEX <>8
-
-			#INCREASE 1 <>5
-			#INCREASE 1 <>7
-			#INCREASE 1 <>9
-			#INCREASE 37 <>10
+			#ADD_TO -3 <>19
+			#ZERO <>24
 		#END
 
 		#ZERO <>1
 
-		#ELSE_BACK <>18
+		#ELSE_BACK <>23
 			#INCREASE 1 <>5
 			#INCREASE 34 <>6
 		#END
@@ -163,27 +181,31 @@
 		#END
 	#END
 
+	#ZERO <>16
+	#ZERO <>17
+	#ZERO <>18
+
 	#INCREASE 1 <>5
 
 	#INCLUDE "end-chunk.txt"
 	#INCLUDE "create-chunk.txt"
 	#DATABASE_EXTEND_CHUNK "></object><pre>"
 
-	#UNLESS_SAVE <>15
+	#UNLESS_SAVE <>20
 		#INCREASE -1 <>5
 	#END
 #END
 
 #IF_SAVE <>5
-	#INCLUDE "skip-head.txt" <>15
+	#INCLUDE "skip-head.txt" <>20
 
-	#UNLESS_SAVE <>15
+	#UNLESS_SAVE <>20
 		#INCREASE -1 <>5
 	#END
 #END
 
 #IF_SAVE <>5
-	#VISIT 22
+	#VISIT 27
 		#ARRAY_GO_END
 		#INCREASE 35 <>-1
 		#INCREASE 32 <>-3
@@ -195,62 +217,82 @@
 		#END
 	#END
 
-	#INCREASE 1 <>18
-	#INCREASE 1 <>20
+	#INCREASE 1 <>23
+	#INCREASE 1 <>25
 
 	#INCREASE -1 <>5
 
-	#WHILE <>18
-		#INCLUDE "find-boundary.txt" <>15
+	#INCREASE 240 <>18
+
+	#WHILE <>23
+		#INCLUDE "find-boundary.txt" <>20
 
 		#INCREASE 1 <>5
 
-		#IF_SAVE_BACK_FLAG <>18
-			#FOR <>19
-				#INCREASE 1 <>2
-				#INCREASE 1 <>3
-				#INCREASE 1 <>4
-				#INCREASE 1 <>6
+		#IF_SAVE_BACK_FLAG <>23
+			#INCREASE 1 <>19
+
+			#BOOL_UNLESS <>16
+				#FOR <>24
+					#INCREASE 1 <>2
+					#INCREASE 1 <>3
+					#INCREASE 1 <>4
+					#INCREASE 1 <>6
+				#END
+
+				#INCREASE -60 <>2
+				#INCREASE -62 <>3
+				#INCREASE -38 <>4
+
+				#UNLESS_BACK <>2
+					#INCREASE -1 <>6
+					#INCREASE 1 <>7
+					#INCREASE 116 <>8
+					#INCREASE 1 <>9
+					#INCREASE 108 <>10
+					#INCREASE 1 <>11
+					#INCREASE 38 <>12
+				#END
+
+				#UNLESS_BACK <>3
+					#INCREASE -3 <>6
+					#INCREASE 1 <>7
+					#INCREASE 116 <>8
+					#INCREASE 1 <>9
+					#INCREASE 103 <>10
+					#INCREASE 1 <>11
+					#INCREASE 38 <>12
+				#END
+
+				#UNLESS_BACK <>4
+					#INCREASE 21 <>6
+					#INCREASE 1 <>7
+					#INCREASE 112 <>8
+					#INCREASE 1 <>9
+					#INCREASE 109 <>10
+					#INCREASE 1 <>11
+					#INCREASE 97 <>12
+					#INCREASE 1 <>13
+					#INCREASE 38 <>14
+				#END
+
+				#INCREASE -1 <>19
+				#INCREASE 1 <>17
+
+				#UNLESS_SAVE_BACK <>17
+					#INCREASE 1 <>18
+
+					#UNLESS_SAVE_BACK <>18
+						#INCREASE 1 <>19
+					#END
+				#END
 			#END
 
-			#INCREASE -60 <>2
-			#INCREASE -62 <>3
-			#INCREASE -38 <>4
-
-			#UNLESS_BACK <>2
-				#INCREASE -1 <>6
-				#INCREASE 1 <>7
-				#INCREASE 116 <>8
-				#INCREASE 1 <>9
-				#INCREASE 108 <>10
-				#INCREASE 1 <>11
-				#INCREASE 38 <>12
-			#END
-
-			#UNLESS_BACK <>3
-				#INCREASE -3 <>6
-				#INCREASE 1 <>7
-				#INCREASE 116 <>8
-				#INCREASE 1 <>9
-				#INCREASE 103 <>10
-				#INCREASE 1 <>11
-				#INCREASE 38 <>12
-			#END
-
-			#UNLESS_BACK <>4
-				#INCREASE 21 <>6
-				#INCREASE 1 <>7
-				#INCREASE 112 <>8
-				#INCREASE 1 <>9
-				#INCREASE 109 <>10
-				#INCREASE 1 <>11
-				#INCREASE 97 <>12
-				#INCREASE 1 <>13
-				#INCREASE 38 <>14
-			#END
+			#ADD_TO -3 <>19
+			#ZERO <>24
 		#END
 
-		#ELSE_BACK <>18
+		#ELSE_BACK <>23
 			#INCREASE 101 <>6
 			#INCREASE 1 <>7
 			#INCREASE 114 <>8
@@ -261,8 +303,6 @@
 			#INCREASE 1 <>13
 			#INCREASE 60 <>14
 		#END
-
-		#ADD_TO 1 <>15
 
 		#WHILE <>5
 			#VISIT 3
@@ -282,9 +322,11 @@
 
 			#INCLUDE "append-database.txt"
 		#END
-
-		#ADD_TO -1 <>16
 	#END
+
+	#ZERO <>16
+	#ZERO <>17
+	#ZERO <>18
 
 	#INCREASE 1 <>5
 
@@ -292,7 +334,7 @@
 	#INCLUDE "create-chunk.txt"
 	#DATABASE_EXTEND_CHUNK "></section>"
 
-	#UNLESS_SAVE <>15
+	#UNLESS_SAVE <>20
 		#INCREASE -1 <>5
 	#END
 #END
