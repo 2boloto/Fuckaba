@@ -30,7 +30,7 @@ Content-Type: text/html
 		height: 200px;
 	}
 
-	section object {
+	section object, section img {
 		margin-right: 1em;
 		max-width: 150px;
 		max-height: 150px;
@@ -42,7 +42,70 @@ Content-Type: text/html
 		white-space: pre-wrap;
 		overflow: auto;
 	}
+
+	section .quote {
+		color: green;
+	}
 </style>
+
+<script>
+	var main = function () {
+		var decodeImage = function (imageNode) {
+			var encodedData = imageNode.data.substr(31);
+
+			var type = "image/jpeg";
+			var data = new Uint8Array(encodedData.length / 3);
+
+			for (var i = 0; i < data.length; ++i) {
+				data[i] = Number.parseInt(encodedData.substr(i * 3 + 1, 2), 16);
+			}
+
+			return new Blob([data], {"type": imageNode.type});
+		};
+
+		for (var postNode of document.querySelectorAll("section:not(.form)")) {
+			var preNode = postNode.querySelector("pre");
+
+			var ID = Number.parseInt(postNode.id.substr(1));
+
+			preNode.innerHTML = preNode.innerHTML.replace(/&gt;&gt;\d+/g, function (match) {
+				var reference = Number.parseInt(match.substr(8));
+
+				if (reference < ID) {
+					return "<a href = \"#p" + reference.toString() + "\">" + match + "</a>";
+				} else {
+					return match;
+				}
+			}).replace(/^&gt;.*$/gm, function (match) {
+					return "<span class = \"quote\">" + match + "</span>";
+			});
+
+
+			var imageNode = postNode.querySelector("object");
+			var linkNode = document.createElement("a");
+			var newImageNode = document.createElement("img");
+
+			var image = decodeImage(imageNode);
+			var link = URL.createObjectURL(image);
+
+			newImageNode.src = link;
+			linkNode.href = link;
+
+			newImageNode.addEventListener("error", function (event) {
+				this.parentNode.parentNode.removeChild(this.parentNode);
+			});
+
+			imageNode.parentNode.insertBefore(linkNode, imageNode);
+			imageNode.parentNode.removeChild(imageNode);
+			linkNode.appendChild(newImageNode);
+
+			newImageNode.data = link;
+			newImageNode.type = image.type;
+		}
+	};
+
+	document.addEventListener("DOMContentLoaded", main);
+</script>
 
 <h1>Факаба</h1>
 

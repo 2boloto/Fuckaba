@@ -30,35 +30,39 @@
 #INCLUDE "increment-counter.txt"
 
 #IF_SAVE <>5
-	#DATABASE_EXTEND_CHUNK "<section><h1>№"
+	#DATABASE_EXTEND_CHUNK "<section id = \"p"
 	#INCLUDE "create-chunk.txt"
-	#DATABASE_EXTEND_CHUNK "    </h1><object"
+	#DATABASE_EXTEND_CHUNK "000\"><h1>№    "
 
-	#DATABASE_GO_BACK
-
-	#ADD_TO_SAVE 16 2 <>-2
-	#INCREASE 16 <>14
+	#ADD_TO_SAVE -8 2 <>-2
+	#INCREASE 16 <>-10
 
 	#ADD_TO_SAVE 4 5 <>-4
 	#ADD_TO_SAVE 4 5 <>-3
 
 	#WHILE
 		#INCREASE 16
-		#ADD_TO 10
+		#ADD_TO -14
 
-		#ADD_TO 11 <>1
-		#INCREASE 16 <>12
+		#ADD_TO -13 <>1
+		#INCREASE 16 <>-12
 	#END
 
 	#WHILE <>1
 		#INCREASE 16 <>1
-		#ADD_TO 11 <>1
+		#ADD_TO -13 <>1
 	#END
+
+	#DATABASE_GO_BACK
+
+	#ADD_TO_SAVE 14 2 <>-2
+	#ADD_TO_SAVE 13 3 <>-3
+	#ADD_TO_SAVE 12 4 <>-4
 
 	#DATABASE_GO_NEXT
 
 	#INCLUDE "create-chunk.txt"
-	#DATABASE_EXTEND_CHUNK "             typ"
+	#DATABASE_EXTEND_CHUNK "</h1><object typ"
 	#INCLUDE "create-chunk.txt"
 	#DATABASE_EXTEND_CHUNK "e = \"image/jpeg\""
 	#INCLUDE "create-chunk.txt"
