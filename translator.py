@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 maximum_code_length = 2 ** 20
-memory_length = 2 ** 20
+memory_length = 363 * 2 ** 20
 
 def translate(code, memory_length, safe = True):
 	result = ""

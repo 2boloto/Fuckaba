@@ -24,7 +24,7 @@
 #INCLUDE "receive-bytes.txt"
 
 #IF_SAVE
-	#ARRAY_COMPARE "password" <>3
+	#CHECK_PASSWORD "password" <>3
 #END
 
 #ADD_TO 20

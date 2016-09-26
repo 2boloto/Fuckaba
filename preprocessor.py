@@ -855,10 +855,24 @@ def array_clear_command(root):
 
 	return "<<[->[-]<<<]"
 
+@block
+def array_foreach_block(root):
+	"Цикл по каждому элементу массива. Указатель остаётся на конце"
+
+	return ">>[", ">>]"
+
+@block
+def array_foreach_back_block(root):
+	"Цикл по каждому элементу массива в обратном порядке. Указатель остаётся на начале"
+
+	return "<<[", "<<]"
+
+# Пароль
+
 @command
-def array_compare_command(root, string):
+def check_password_command(root, string):
 	"""
-		Сравнивает массив с константной строкой, удаляя его. Его длина должна соответствовать длине константы и ограничена 255 байтами.
+		Сравнивает массив с указанным паролем, удаляя его.
 
 		>- 0
 		>  массив
@@ -873,19 +887,7 @@ def array_compare_command(root, string):
 	if type(string) is str:
 		string = string.encode()
 
-	return ">>>>" + ">>".join(increase(-i) for i in string) + ">+<<[>[[-]<->]>-[+<<[-]>>]<<<<]<"
-
-@block
-def array_foreach_block(root):
-	"Цикл по каждому элементу массива. Указатель остаётся на конце"
-
-	return ">>[", ">>]"
-
-@block
-def array_foreach_back_block(root):
-	"Цикл по каждому элементу массива в обратном порядке. Указатель остаётся на начале"
-
-	return "<<[", "<<]"
+	return ">>~>>" + ">>".join(increase(-i) for i in string) + "~>+<<[>[[-]<->]>-[+<<[-]>>]<<<<]<"
 
 # База данных
 
@@ -1079,9 +1081,9 @@ def preprocess(code, root = "."):
 
 	return result
 
-def format(code):
-	result = ""
+import itertools
 
+def format(code):
 	def reorder(code):
 		shift = 0
 		differences = {}
@@ -1124,20 +1126,28 @@ def format(code):
 
 		return result
 
+	reordered = ""
 	fragment = ""
 
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.:~?":
-			result += reorder(fragment) + i
+		elif i in "[],.~":
+			reordered += reorder(fragment) + i
 			fragment = ""
 
-	result = "\n".join(result[i: i + 80] for i in range(0, len(result), 80))
+	result = ""
 
-	return "#!interpreter\n" + result + "\n"
+	for i, j in zip(reordered.split("~"), itertools.count()):
+		if j % 2 == 0:
+			result += "\n".join(i[k: k + 80] for k in range(0, len(i), 80)) + "\n"
+		else:
+			result += "\nПароль:\n" + i.replace(">>", "\n>>") + "\n\n"
+
+	return "#!interpreter\n" + result
 
 if __name__ == "__main__":
 	import sys
 
-	sys.stdout.write(format(preprocess(sys.stdin.read())))
+	with open(sys.argv[1]) as file:
+		sys.stdout.write(format(preprocess(file.read())))

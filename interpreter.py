@@ -1,14 +1,9 @@
 #!/usr/bin/python3
 
-# Интерпретатор работает в дебажном режиме:
-# - команда `:` печатает шестнадцатеричное представление байта в стандартный поток ошибок;
-# - `~` дампит туда же память;
-# - `?` завершает программу.
-
 maximum_code_length = 2 ** 20
-memory_length = 2 ** 20
+memory_length = 363 * 2 ** 20
 
-def interpret(code, memory, read, write, debug = None, debug_write = None):
+def interpret(code, memory, read, write):
 	loops = {}
 	stack = []
 
@@ -58,13 +53,6 @@ def interpret(code, memory, read, write, debug = None, debug_write = None):
 
 				pointer += 1
 				last_pointer = max(last_pointer, pointer)
-			elif debug is not None:
-				if instruction == ":":
-					debug_write(memory[pointer])
-				elif instruction == "~":
-					debug(memory, position + 1, pointer, last_pointer, instructions_count)
-				elif instruction == "?":
-					position = len(code) - 1
 
 			position += 1
 			instructions_count += 1
@@ -78,20 +66,6 @@ def write(byte):
 	sys.stdout.buffer.write(bytes([byte]))
 	sys.stdout.buffer.flush()
 
-def debug(memory, position, pointer, last_pointer, instructions_count):
-	dump = " ".join("{:02x}".format(memory[i]) + ("<" if i == pointer else "") for i in range(last_pointer + 1))
-
-	sys.stderr.write("{}\n{}\n".format(dump, "=" * 16))
-	sys.stderr.write("Позиция в коде: {}\n".format(position))
-	sys.stderr.write("Указатель: {}\n".format(pointer))
-	sys.stderr.write("Выполнено инструкций: {}\n".format(instructions_count))
-	sys.stderr.write("Использованно ячеек: {}\n\n".format(last_pointer + 1))
-	sys.stderr.flush()
-
-def debug_write(byte):
-	sys.stderr.write("{:02x}\n".format(byte))
-	sys.stderr.flush()
-
 if __name__ == "__main__":
 	import sys
 
@@ -101,4 +75,4 @@ if __name__ == "__main__":
 		if file.read(1) != "":
 			raise Exception("Слишком много кода")
 
-	interpret(code, bytearray(memory_length), read, write, debug, debug_write)
+	interpret(code, bytearray(memory_length), read, write)
