@@ -6,7 +6,7 @@ import socket
 
 with socket.socket() as s:
 	s.bind((sys.argv[2], int(sys.argv[3])))
-	s.listen()
+	s.listen(255)
 
 	process = subprocess.Popen([sys.argv[1]], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
 
