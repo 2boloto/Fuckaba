@@ -734,10 +734,10 @@ def network_close_command(root):
 
 		>- 0
 
-		<- 0
+		<- 0, если успешно, иначе 1
 	"""
 
-	return "+++.---"
+	return "+++.,"
 
 # Линия
 

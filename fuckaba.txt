@@ -59,5 +59,6 @@
 		#INCLUDE "lib/end-receiving.txt"
 
 		#NETWORK_CLOSE
+		#ZERO
 	#END
 #END
