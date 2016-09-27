@@ -72,7 +72,9 @@ Content-Type: text/html
 				var reference = Number.parseInt(match.substr(8));
 
 				if (reference < ID) {
-					return "<a href = \"#p" + reference.toString() + "\">" + match + "</a>";
+					var href = reference.toString();
+
+					return "<a href = \"#p" + "000".substr(href.length) + href + "\">" + match + "</a>";
 				} else {
 					return match;
 				}
