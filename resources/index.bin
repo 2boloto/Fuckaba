@@ -104,6 +104,16 @@ Content-Type: text/html
 			newImageNode.data = link;
 			newImageNode.type = image.type;
 		}
+
+		var adminNode = document.querySelector("#admin");
+
+		var showAdmin = function () {
+			adminNode.style.display = location.hash === "#admin" ? "block" : "none";
+		};
+
+		window.addEventListener("hashchange", showAdmin);
+
+		showAdmin();
 	};
 
 	document.addEventListener("DOMContentLoaded", main);
@@ -111,7 +121,7 @@ Content-Type: text/html
 
 <h1>Факаба</h1>
 
-<section class = "form">
+<section class = "form" id = "reply">
 	<h1>Ответ</h1>
 
 	<p>Доска сможет принять не более 999 постов. Размер картинки не должен превышать 64 КиБ, размер сообщения - 4 КиБ.</p>
@@ -127,7 +137,7 @@ Content-Type: text/html
 	</form>
 </section>
 
-<section class = "form">
+<section class = "form" id = "admin">
 	<h1>Админка</h1>
 
 	<form method = "post" enctype = "multipart/form-data" action = "/a">
