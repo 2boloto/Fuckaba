@@ -17,10 +17,7 @@ def interpret(code, memory, read, write):
 		raise Exception("Незакрытая скобка")
 
 	pointer = 0
-	last_pointer = 0
-
 	position = 0
-	instructions_count = 0
 
 	while position < len(code):
 		instruction = code[position]
@@ -52,19 +49,10 @@ def interpret(code, memory, read, write):
 					raise Exception("Слишком право")
 
 				pointer += 1
-				last_pointer = max(last_pointer, pointer)
 
 			position += 1
-			instructions_count += 1
 
-	return pointer, last_pointer, instructions_count
-
-def read():
-	return sys.stdin.buffer.read(1)[0]
-
-def write(byte):
-	sys.stdout.buffer.write(bytes([byte]))
-	sys.stdout.buffer.flush()
+	return pointer
 
 if __name__ == "__main__":
 	import sys
@@ -74,5 +62,12 @@ if __name__ == "__main__":
 
 		if file.read(1) != "":
 			raise Exception("Слишком много кода")
+
+	def read():
+		return sys.stdin.buffer.read(1)[0]
+
+	def write(byte):
+		sys.stdout.buffer.write(bytes([byte]))
+		sys.stdout.flush()
 
 	interpret(code, bytearray(memory_length), read, write)
