@@ -1132,7 +1132,7 @@ def format(code):
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.~":
+		elif i in "[],.~&":
 			reordered += reorder(fragment) + i
 			fragment = ""
 

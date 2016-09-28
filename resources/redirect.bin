@@ -1,4 +1,4 @@
 HTTP/1.1 303 See Other
-Server: Fuckaba/1.1.0
+Server: Fuckaba/1.2.0
 Location: /
 

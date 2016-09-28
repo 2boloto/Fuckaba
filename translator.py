@@ -168,9 +168,67 @@ def create_main(dump_filename):
 		dump_filename = ", ".join("0x{:02x}".format(i) for i in dump_filename.encode() + b"\x00")
 	)
 
+def load_state(file, maximum_code_length = None, memory_length = None):
+	position, pointer, code_length, initialized_memory_length = map(int, file.readline().split())
+
+	if (
+		position < 0 or position >= code_length or
+		pointer < 0 or
+		code_length < 0 or
+		initialized_memory_length < 0
+	):
+		raise Exception("Неправильный формат")
+
+	position += 1
+
+	if memory_length is not None:
+		if pointer > memory_length:
+			raise Exception("Слишком большой указатель")
+
+		if initialized_memory_length > memory_length:
+			raise Exception("Слишком много начальной памяти")
+
+	if maximum_code_length is not None:
+		if code_length > maximum_code_length:
+			raise Exception("Слишком много кода")
+
+	code = file.read(code_length)
+
+	if len(code) < code_length:
+		raise Exception("Неправильный формат")
+
+	code = code.decode()
+	memory = file.read(initialized_memory_length)
+
+	if len(memory) != initialized_memory_length:
+		raise Exception("Неправильный формат")
+
+	if file.read(1) != b"":
+		raise Exception("Неправильный формат")
+
+	return code, position, memory, pointer
+
+def save_state(file, code, position, memory, pointer):
+	code = code.encode()
+
+	initialized_memory_length = 0
+
+	for i in range(len(memory) - 1, -1, -1):
+		if memory[i] != 0:
+			initialized_memory_length = i + 1
+
+			break
+
+	file.write("{} {} {} {}\n".format(position, pointer, len(code), initialized_memory_length).encode())
+	file.write(code)
+	file.write(memory[: initialized_memory_length])
+	file.flush()
+
 if __name__ == "__main__":
 	import argparse
 	import sys
+
+	import interpreter
 
 	parser = argparse.ArgumentParser()
 
@@ -178,7 +236,7 @@ if __name__ == "__main__":
 	parser.add_argument("--maximum-loop-depth", "-w", type = int, default = 256)
 	parser.add_argument("input", type = str)
 	parser.add_argument("--position", "-i", type = int, default = 0)
-	parser.add_argument("--memory-length", "-l", type = int, default = 363 * 2 ** 20)
+	parser.add_argument("--memory-length", "-l", type = int, default = interpreter.memory_length)
 	parser.add_argument("--memory", "-m", type = str)
 	parser.add_argument("--pointer", "-p", type = int, default = 0)
 	parser.add_argument("--dump", "-d", type = str, default = "dump.bin")
@@ -193,44 +251,11 @@ if __name__ == "__main__":
 
 	if arguments.state:
 		with open(arguments.input, "rb") as file:
-			position, pointer, code_length, initialized_memory_length = map(int, file.readline().split())
-
-			if (
-				position < 0 or position >= code_length or
-				pointer < 0 or
-				code_length < 0 or
-				initialized_memory_length < 0
-			):
-				raise Exception("Неправильный формат")
-
-			position += 1
-
-			if pointer > memory_length:
-				raise Exception("Слишком большой указатель")
-
-			if code_length > maximum_code_length:
-				raise Exception("Слишком много кода")
-
-			if initialized_memory_length > memory_length:
-				raise Exception("Слишком много начальной памяти")
-
-			code = file.read(code_length)
-
-			if len(code) < code_length:
-				raise Exception("Неправильный формат")
-
-			code = code.decode()
-			memory = file.read(initialized_memory_length)
-
-			if len(memory) != initialized_memory_length:
-				raise Exception("Неправильный формат")
-
-			if file.read(1) != b"":
-				raise Exception("Неправильный формат")
+			code, position, memory, pointer = load_state(file, maximum_code_length, memory_length)
 	else:
 		position = arguments.position
-		pointer = arguments.pointer
 		memory = b""
+		pointer = arguments.pointer
 
 		with open(arguments.input, "r") as file:
 			code = file.read(maximum_code_length)

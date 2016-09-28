@@ -3,7 +3,7 @@
 maximum_code_length = 2 ** 20
 memory_length = 363 * 2 ** 20
 
-def interpret(code, memory, read, write):
+def interpret(code, memory, read = None, write = None):
 	loops = {}
 	stack = []
 
