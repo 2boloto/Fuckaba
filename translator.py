@@ -63,7 +63,7 @@ main_template = string.Template("""
 			if (signaled != 0) {
 				dump();
 
-				return false;
+				signaled = 0;
 			}
 
 			return true;
@@ -80,7 +80,7 @@ main_template = string.Template("""
 			if (signaled != 0) {
 				dump();
 
-				return false;
+				signaled = 0;
 			}
 
 			return true;
