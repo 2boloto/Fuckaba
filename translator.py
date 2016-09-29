@@ -3,17 +3,22 @@
 import string
 
 execute_template = string.Template("""
+	#include <string.h>
 	#include <stdint.h>
 	#include <stdbool.h>
 
 	#define MEMORY_LENGTH $memory_length
 
 	static const char code[] = {$code};
-	static uint8_t memory[MEMORY_LENGTH] = {$memory};
-	static uint8_t *pointer = memory + $pointer;
+	static const uint8_t initialized_memory[] = {$initialized_memory};
+
 	static uintptr_t position;
+	static uint8_t memory[MEMORY_LENGTH];
+	static uint8_t *pointer = memory + $pointer;
 
 	static bool execute(bool (*read)(uint8_t *cell), bool (*write)(const uint8_t *cell)) {
+		memcpy(memory, initialized_memory, sizeof initialized_memory);
+
 		goto start;
 
 		$instructions
@@ -108,7 +113,7 @@ main_template = string.Template("""
 
 import itertools
 
-def translate(maximum_loop_depth, code, memory_length, memory, position = 0, pointer = 0, safe = True):
+def translate(maximum_loop_depth, code, memory_length, initialized_memory, position = 0, pointer = 0, safe = True):
 	instructions = ""
 
 	depth = 0
@@ -158,7 +163,7 @@ def translate(maximum_loop_depth, code, memory_length, memory, position = 0, poi
 	return execute_template.substitute(
 		code = ", ".join("0x{:02x}".format(i) for i in code.encode()),
 		memory_length = memory_length,
-		memory = ", ".join("0x{:02x}".format(i) for i in memory),
+		initialized_memory = ", ".join("0x{:02x}".format(i) for i in initialized_memory),
 		pointer = pointer,
 		instructions = instructions
 	)
@@ -198,15 +203,15 @@ def load_state(file, maximum_code_length = None, memory_length = None):
 		raise Exception("Неправильный формат")
 
 	code = code.decode()
-	memory = file.read(initialized_memory_length)
+	initialized_memory = file.read(initialized_memory_length)
 
-	if len(memory) != initialized_memory_length:
+	if len(initialized_memory) != initialized_memory_length:
 		raise Exception("Неправильный формат")
 
 	if file.read(1) != b"":
 		raise Exception("Неправильный формат")
 
-	return code, position, memory, pointer
+	return code, position, initialized_memory, pointer
 
 def save_state(file, code, position, memory, pointer):
 	code = code.encode()
@@ -251,10 +256,10 @@ if __name__ == "__main__":
 
 	if arguments.state:
 		with open(arguments.input, "rb") as file:
-			code, position, memory, pointer = load_state(file, maximum_code_length, memory_length)
+			code, position, initialized_memory, pointer = load_state(file, maximum_code_length, memory_length)
 	else:
 		position = arguments.position
-		memory = b""
+		initialized_memory = b""
 		pointer = arguments.pointer
 
 		with open(arguments.input, "r") as file:
@@ -265,12 +270,12 @@ if __name__ == "__main__":
 
 		if arguments.memory is not None:
 			with open(arguments.memory, "rb") as file:
-				memory = file.read()
+				initialized_memory = file.read()
 
 				if file.read(1) != b"":
 					raise Exception("Слишком много начальной памяти")
 
 	sys.stdout.write(
-		translate(maximum_loop_depth, code, memory_length, memory, position, pointer) +
+		translate(maximum_loop_depth, code, memory_length, initialized_memory, position, pointer) +
 		create_main(dump_filename)
 	)

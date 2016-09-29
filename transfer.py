@@ -6,7 +6,7 @@ import translator
 import interpreter
 
 with open(sys.argv[1], "rb") as file:
-	memory = translator.load_state(file)[2]
+	initialized_memory = translator.load_state(file)[2]
 
 with open(sys.argv[2], "r") as file:
 	new_code = file.read()
@@ -31,12 +31,14 @@ new_position = new_code.index("&")
 new_memory = bytearray(interpreter.memory_length)
 new_pointer = interpreter.interpret(new_code[: new_position], new_memory)
 
-pointer = 5
-pointer = search_database(memory, pointer)[0]
-pointer, result = search_database(memory, pointer, True)
+start = search_database(initialized_memory, 5)[0]
+start, result = search_database(initialized_memory, start, True)
 
 if result:
-	posts = b"\x00\x00\x00\x00\x00" + memory[pointer: search_database(memory, pointer)[0] - 5]
+	end = search_database(initialized_memory, start)[0]
+
+	posts = b"\x00\x00\x00\x00\x00" + initialized_memory[start: end - 5]
+	posts += b"\x00" * (end - start - len(posts))
 
 	new_memory[new_pointer - 7] = 1
 	new_memory[new_pointer: new_pointer + len(posts)] = posts
