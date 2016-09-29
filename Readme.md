@@ -1,4 +1,4 @@
-Факаба 1.2.0
+Факаба 1.3.0
 ============
 
 ![Скриншот](https://s17.postimg.org/dl5afjhtb/Screenshot.png)
