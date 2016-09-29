@@ -34,11 +34,15 @@ Content-Type: text/html
 		height: 200px;
 	}
 
-	section object, section img {
+	section img {
+		display: none;
+	}
+
+	section object, section .picture {
+		display: block;
 		margin-right: 1em;
 		max-width: 150px;
 		max-height: 150px;
-
 		float: left;
 	}
 
@@ -102,12 +106,16 @@ Content-Type: text/html
 			var image = decodeImage(imageNode);
 			var link = URL.createObjectURL(image);
 
-			newImageNode.src = link;
-			linkNode.href = link;
+			newImageNode.addEventListener("load", function (event) {
+				this.classList.add("picture");
+			});
 
 			newImageNode.addEventListener("error", function (event) {
 				this.parentNode.parentNode.removeChild(this.parentNode);
 			});
+
+			newImageNode.src = link;
+			linkNode.href = link;
 
 			imageNode.parentNode.insertBefore(linkNode, imageNode);
 			imageNode.parentNode.removeChild(imageNode);
