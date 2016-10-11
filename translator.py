@@ -30,84 +30,68 @@ execute_template = string.Template("""
 main_template = string.Template("""
 	#include <stdio.h>
 	#include <stdlib.h>
-	#include <signal.h>
+	#include <errno.h>
 	#include <stdbool.h>
 	#include <inttypes.h>
 
-	sig_atomic_t signaled;
+	#include <unistd.h>
+	#include <sys/syscall.h>
+	#include <sys/wait.h>
+	#include <sys/prctl.h>
+	#include <linux/seccomp.h>
 
-	static void dump(void) {
-		FILE *file = fopen((const char []) {$dump_filename}, "wb");
+	static bool read_cell(uint8_t *cell) {
+		while (true) {
+			ssize_t result = read(0, cell, 1);
 
-		size_t initialized_memory_length = 0;
-
-		if (file != NULL) {
-			for (size_t i = MEMORY_LENGTH; i-- > 0; ){
-				if (memory[i] != 0) {
-					initialized_memory_length = i + 1;
-
-					break;
-				}
+			if (result == 1) {
+				return true;
+			} else if (result != EINTR) {
+				return false;
 			}
-
-			fprintf(file, "%" PRIuPTR " %tu %zu %zu\\n", position, pointer - memory, sizeof code, initialized_memory_length);
-			fwrite(code, sizeof code, sizeof *code, file);
-			fwrite(memory, initialized_memory_length, sizeof *code, file);
-			fflush(file);
 		}
 	}
 
-	static bool read(uint8_t *cell) {
-		int character = getchar();
+	static bool write_cell(const uint8_t *cell) {
+		while (true) {
+			ssize_t result = write(1, cell, 1);
 
-		if (character == EOF) {
-			return false;
-		} else {
-			*cell = character;
-
-			if (signaled != 0) {
-				dump();
-
-				signaled = 0;
+			if (result == 1) {
+				return true;
+			} else if (result != EINTR) {
+				return false;
 			}
-
-			return true;
 		}
-	}
-
-	static bool write(const uint8_t *cell) {
-		putchar(*cell);
-		fflush(stdout);
-
-		if (ferror(stdout) != 0) {
-			return false;
-		} else {
-			if (signaled != 0) {
-				dump();
-
-				signaled = 0;
-			}
-
-			return true;
-		}
-	}
-
-	static void handler(int number) {
-		signaled = 1;
 	}
 
 	int main(void) {
 		freopen(NULL, "rb", stdin);
+		fclose(stderr);
 
-		struct sigaction action = {
-			.sa_handler = handler,
-			.sa_flags = SA_RESTART
-		};
+		if (fork() == 0) {
+			if (syscall(SYS_prctl, PR_SET_SECCOMP, SECCOMP_MODE_STRICT) != 0) {
+				return EXIT_FAILURE;
+			}
 
-		sigemptyset(&action.sa_mask);
-		sigaction(SIGUSR1, &action, NULL);
+			syscall(SYS_exit, execute(read_cell, write_cell) == true ? EXIT_SUCCESS : EXIT_FAILURE);
+		} else {
+			wait(NULL);
 
-		return execute(read, write) == true ? EXIT_SUCCESS : EXIT_FAILURE;
+			return EXIT_SUCCESS;
+		}
+	}
+
+	static size_t nonzero_memory_length(void) {
+		size_t result = 0;
+
+		for (size_t i = MEMORY_LENGTH; i-- > 0; ){
+			if (memory[i] != 0) {
+				result = i + 1;
+				break;
+			}
+		}
+
+		return result;
 	}
 """)
 
@@ -168,10 +152,8 @@ def translate(maximum_loop_depth, code, memory_length, initialized_memory, posit
 		instructions = instructions
 	)
 
-def create_main(dump_filename):
-	return main_template.substitute(
-		dump_filename = ", ".join("0x{:02x}".format(i) for i in dump_filename.encode() + b"\x00")
-	)
+def create_main():
+	return main_template.substitute()
 
 def load_state(file, maximum_code_length = None, memory_length = None):
 	position, pointer, code_length, initialized_memory_length = map(int, file.readline().split())
@@ -244,7 +226,6 @@ if __name__ == "__main__":
 	parser.add_argument("--memory-length", "-l", type = int, default = interpreter.memory_length)
 	parser.add_argument("--memory", "-m", type = str)
 	parser.add_argument("--pointer", "-p", type = int, default = 0)
-	parser.add_argument("--dump", "-d", type = str, default = "dump.bin")
 	parser.add_argument("--state", "-s", action = "store_true")
 
 	arguments = parser.parse_args()
@@ -252,7 +233,6 @@ if __name__ == "__main__":
 	maximum_code_length = arguments.maximum_code_length
 	maximum_loop_depth = arguments.maximum_loop_depth
 	memory_length = arguments.memory_length
-	dump_filename = arguments.dump
 
 	if arguments.state:
 		with open(arguments.input, "rb") as file:
@@ -277,5 +257,5 @@ if __name__ == "__main__":
 
 	sys.stdout.write(
 		translate(maximum_loop_depth, code, memory_length, initialized_memory, position, pointer) +
-		create_main(dump_filename)
+		create_main()
 	)

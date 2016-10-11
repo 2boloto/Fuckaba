@@ -887,7 +887,7 @@ def check_password_command(root, string):
 	if type(string) is str:
 		string = string.encode()
 
-	return ">>~>>" + ">>".join(increase(-i) for i in string) + "~>+<<[>[[-]<->]>-[+<<[-]>>]<<<<]<"
+	return ">>~>>" + ">>".join("-" * i for i in string) + "~>+<<[>[[-]<->]>-[+<<[-]>>]<<<<]<"
 
 # База данных
 
