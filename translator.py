@@ -68,17 +68,11 @@ main_template = string.Template("""
 		freopen(NULL, "rb", stdin);
 		fclose(stderr);
 
-		if (fork() == 0) {
-			if (syscall(SYS_prctl, PR_SET_SECCOMP, SECCOMP_MODE_STRICT) != 0) {
-				return EXIT_FAILURE;
-			}
-
-			syscall(SYS_exit, execute(read_cell, write_cell) == true ? EXIT_SUCCESS : EXIT_FAILURE);
-		} else {
-			wait(NULL);
-
-			return EXIT_SUCCESS;
+		if (syscall(SYS_prctl, PR_SET_SECCOMP, SECCOMP_MODE_STRICT) != 0) {
+			return EXIT_FAILURE;
 		}
+
+		syscall(SYS_exit, execute(read_cell, write_cell) == true ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
 
 	static size_t nonzero_memory_length(void) {
