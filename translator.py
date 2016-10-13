@@ -36,13 +36,12 @@ main_template = string.Template("""
 
 	#include <unistd.h>
 	#include <sys/syscall.h>
-	#include <sys/wait.h>
 	#include <sys/prctl.h>
 	#include <linux/seccomp.h>
 
 	static bool read_cell(uint8_t *cell) {
 		while (true) {
-			ssize_t result = read(0, cell, 1);
+			ssize_t result = syscall(SYS_read, 0, cell, 1);
 
 			if (result == 1) {
 				return true;
@@ -54,7 +53,7 @@ main_template = string.Template("""
 
 	static bool write_cell(const uint8_t *cell) {
 		while (true) {
-			ssize_t result = write(1, cell, 1);
+			ssize_t result = syscall(SYS_write, 1, cell, 1);
 
 			if (result == 1) {
 				return true;
