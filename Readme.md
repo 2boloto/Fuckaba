@@ -100,4 +100,4 @@
 Потом можно его скомпилировать:
 
 	$ mv new-dump.bin dump.bin
-	$ make awoken
+	$ make CFLAGS=-g awoken
