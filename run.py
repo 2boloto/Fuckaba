@@ -5,10 +5,10 @@ import subprocess
 import socket
 
 with socket.socket() as s:
-	s.bind((sys.argv[2], int(sys.argv[3])))
+	s.bind((sys.argv[1], int(sys.argv[2])))
 	s.listen(255)
 
-	process = subprocess.Popen([sys.argv[1]], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+	process = subprocess.Popen(sys.argv[3: ], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
 
 	while True:
 		command = process.stdout.read(1)[0]

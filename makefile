@@ -1,18 +1,17 @@
+MEMORY_LENGTH=380633088
+
 fuckaba.bf: fuckaba.txt preprocessor.py lib/*.txt resources/*.bin
-	./preprocessor.py $< > $@
+	echo "#!interpreter -l" $(MEMORY_LENGTH) > $@
+	echo "+" >> $@
+	./preprocessor.py $< >> $@
 
 fuckaba: fuckaba.c
 
-fuckaba.c: fuckaba.bf translator.py
-	./translator.py $< > $@
-
-awoken: awoken.c
-
-awoken.c: dump.bin translator.py
-	./translator.py -s $< > $@
+fuckaba.c: fuckaba.bf Tools/translator.py
+	Tools/translator.py -m $(MEMORY_LENGTH) -d $< > $@
 
 clean:
-	rm -f fuckaba fuckaba.c awoken awoken.c
+	rm -f fuckaba fuckaba.c
 
 resources/index.bin: resources/index-head.txt resources/index-body.htm
 	echo | cat $< - | sed "s/$$/\r/g" | cat - resources/index-body.htm > $@

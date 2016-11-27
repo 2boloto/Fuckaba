@@ -1132,7 +1132,7 @@ def format(code):
 	for i in code:
 		if i in "-+><":
 			fragment += i
-		elif i in "[],.~&":
+		elif i in "[],.~":
 			reordered += reorder(fragment) + i
 			fragment = ""
 
@@ -1142,9 +1142,9 @@ def format(code):
 		if j % 2 == 0:
 			result += "\n".join(i[k: k + 80] for k in range(0, len(i), 80)) + "\n"
 		else:
-			result += "\nПароль:\n" + i.replace(">>", "\n>>") + "\n\n"
+			result += "\nPassword:\n" + i.replace(">>", "\n>>") + "\n\n"
 
-	return "#!interpreter\n" + result
+	return result
 
 if __name__ == "__main__":
 	import sys

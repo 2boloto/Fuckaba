@@ -1,8 +1,6 @@
 #DATABASE_LOAD "resources/redirect.bin"
 #DATABASE_LOAD "resources/index.bin"
 
-&
-
 #FOREVER
 	#NETWORK_ACCEPT
 
