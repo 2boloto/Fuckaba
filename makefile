@@ -7,8 +7,8 @@ fuckaba.bf: fuckaba.txt preprocessor.py lib/*.txt resources/*.bin
 
 fuckaba: fuckaba.c
 
-fuckaba.c: fuckaba.bf Tools/translator.py
-	Tools/translator.py -m $(MEMORY_LENGTH) -d $< > $@
+fuckaba.c: fuckaba.bf Brainfuck-tools/translator.py
+	Brainfuck-tools/translator.py -m $(MEMORY_LENGTH) -d $< > $@
 
 clean:
 	rm -f fuckaba fuckaba.c
