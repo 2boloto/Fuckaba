@@ -1,16 +1,38 @@
 #!/usr/bin/python3
 
-# В комментах к командам символом `>` обозначается состояние памяти перед вызовом, а `<` - после
+# В комментах к командам символом ">" обозначается состояние памяти перед вызовом, а "<" - после
 # Дефисом после треугольной скобки обозначено положение указателя
 
 import os.path
+
+def go(count):
+	if count > 0:
+		return ">" * count
+	else:
+		return "<" * -count
+
+def visit(count, instruction):
+	return go(count) + instruction + go(-count)
+
+def increase(count):
+	if count > 0:
+		return "+" * count
+	else:
+		return "-" * -count
 
 names = {"END", "INCLUDE"}
 commands = {}
 blocks = {}
 
-def decorator(category, suffix, function):
-	name = function.__name__[: -len(suffix)].upper()
+def instruction(function):
+	name = function.__name__.upper()
+
+	if name.endswith("_COMMAND"):
+		category = commands
+		name = name[: -8]
+	else:
+		category = blocks
+		name = name[: -6]
 
 	if name in names:
 		raise Exception("Имя занято")
@@ -20,63 +42,45 @@ def decorator(category, suffix, function):
 
 	return function
 
-command = lambda function: decorator(commands, "_command", function)
-block = lambda function: decorator(blocks, "_block", function)
-
 # Простые команды
 
-def go(count):
-	if count > 0:
-		return ">" * count
-	else:
-		return "<" * -count
-
-def visit(count, command):
-	return go(count) + command + go(-count)
-
-def increase(count):
-	if count > 0:
-		return "+" * count
-	else:
-		return "-" * -count
-
-@command
+@instruction
 def go_command(root, count):
 	"Переходит на заданное число ячеек влево или вправо"
 
 	return go(count)
 
-@command
+@instruction
 def input_command(root):
 	"Вводит байт"
 
 	return ","
 
-@command
+@instruction
 def output_command(root):
 	"Выводит байт"
 
 	return "."
 
-@command
+@instruction
 def zero_command(root):
 	"Зануляет данную ячейку"
 
 	return "[-]"
 
-@command
+@instruction
 def increase_command(root, count):
 	"Увеличивает или уменьшает данную ячеку на заданное число"
 
 	return increase(count)
 
-@block
+@instruction
 def visit_block(root, count):
 	"Переходит к указанной ячейке на входе и возвращается на выходе"
 
 	return go(count), go(-count)
 
-@block
+@instruction
 def if_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
@@ -92,7 +96,7 @@ def if_block(root):
 
 	return "[", "[-]]"
 
-@block
+@instruction
 def bool_if_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. После выполнения она зануляется.
@@ -110,7 +114,7 @@ def bool_if_block(root):
 
 	return "[", "-]"
 
-@block
+@instruction
 def if_l_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполненем она зануляется.
@@ -126,7 +130,7 @@ def if_l_block(root):
 
 	return "[[-]", "]"
 
-@block
+@instruction
 def bool_if_l_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Перед выполнения она зануляется.
@@ -144,7 +148,7 @@ def bool_if_l_block(root):
 
 	return "[-", "]"
 
-@block
+@instruction
 def if_save_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется.
@@ -168,7 +172,7 @@ def if_save_block(root):
 
 	return "[", ">>+<]>[-<]<"
 
-@block
+@instruction
 def if_save_back_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется.
@@ -192,7 +196,7 @@ def if_save_back_block(root):
 
 	return "[", "<<+>]<[->]>"
 
-@block
+@instruction
 def if_save_flag_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется. Сохраняет флаг во второй справа ячейке.
@@ -216,7 +220,7 @@ def if_save_flag_block(root):
 
 	return "[", ">>+<]>[<]<"
 
-@block
+@instruction
 def if_save_back_flag_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - не нуль. Её значение сохраняется. Сохраняет флаг во второй слева ячейке.
@@ -240,10 +244,10 @@ def if_save_back_flag_block(root):
 
 	return "[", "<<+>]<[>]>"
 
-@block
+@instruction
 def else_block(root):
 	"""
-		Условный блок, выполняется, если предыдущая команда `IF_SAVE_FLAG` не выполнилась.
+		Условный блок, выполняется, если предыдущая команда "IF_SAVE_FLAG" не выполнилась.
 
 		>- x - неважно
 		>  y - неважно
@@ -264,10 +268,10 @@ def else_block(root):
 
 	return ">>-[+<<", ">>]<<"
 
-@block
+@instruction
 def else_back_block(root):
 	"""
-		Условный блок, выполняется, если предыдущая команда `IF_SAVE_BACK_FLAG` не выполнилась.
+		Условный блок, выполняется, если предыдущая команда "IF_SAVE_BACK_FLAG" не выполнилась.
 
 		>  флаг
 		>  y - неважно
@@ -288,7 +292,7 @@ def else_back_block(root):
 
 	return "<<-[+>>", "<<]>>"
 
-@block
+@instruction
 def unless_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
@@ -308,7 +312,7 @@ def unless_block(root):
 
 	return "[[-]>+<]>-[+<", ">]<"
 
-@block
+@instruction
 def unless_back_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
@@ -328,7 +332,7 @@ def unless_back_block(root):
 
 	return "[[-]<+>]<-[+>", "<]>"
 
-@block
+@instruction
 def bool_unless_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Если нет, то она зануляется.
@@ -346,7 +350,7 @@ def bool_unless_block(root):
 
 	return "-[+", "]"
 
-@block
+@instruction
 def unless_save_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Её значение сохраняется.
@@ -370,7 +374,7 @@ def unless_save_block(root):
 
 	return "[>>+<]>[<]>-[+<<", ">>]<<"
 
-@block
+@instruction
 def unless_save_back_block(root):
 	"""
 		Условный блок, выполняется, если данная ячейка - нуль. Её значение сохраняется.
@@ -394,7 +398,7 @@ def unless_save_back_block(root):
 
 	return "[<<+>]<[>]<-[+>>", "<<]>>"
 
-@block
+@instruction
 def for_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём. После каждой итерации она уменьшается на 1.
@@ -410,7 +414,7 @@ def for_block(root):
 
 	return "[", "-]"
 
-@block
+@instruction
 def for_l_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём. Перед каждой итерацией она уменьшается на 1.
@@ -426,7 +430,7 @@ def for_l_block(root):
 
 	return "[-", "]"
 
-@block
+@instruction
 def while_block(root):
 	"""
 		Цикл до тех пор, пока данная ячейка не станет нулём.
@@ -442,7 +446,7 @@ def while_block(root):
 
 	return "[", "]"
 
-@block
+@instruction
 def forever_block(root):
 	"""
 		Бесконечный цикл.
@@ -460,7 +464,7 @@ def forever_block(root):
 
 # Команды с несколькими вводами
 
-@command
+@instruction
 def add_to_command(root, destination):
 	"""
 		Складывает данную ячейку с указанной.
@@ -478,7 +482,7 @@ def add_to_command(root, destination):
 
 	return "[-" + visit(destination, "+") + "]"
 
-@command
+@instruction
 def subtract_to_command(root, destination):
 	"""
 		Отнимает данную ячейку от указанной.
@@ -496,7 +500,7 @@ def subtract_to_command(root, destination):
 
 	return "[-" + visit(destination, "-") + "]"
 
-@command
+@instruction
 def add_to_save_command(root, destination, buffer):
 	"""
 		Складывает с указанной ячейкой данную, сохраняя её значение с помощью временной.
@@ -518,7 +522,7 @@ def add_to_save_command(root, destination, buffer):
 
 	return "[-" + visit(buffer, "+") + visit(destination, "+") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
-@command
+@instruction
 def subtract_to_save_command(root, destination, buffer):
 	"""
 		Отнимает от указанной ячейки данную, сохраняя её значение с помощью временной.
@@ -540,7 +544,7 @@ def subtract_to_save_command(root, destination, buffer):
 
 	return "[-" + visit(buffer, "+") + visit(destination, "-") +"]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
-@command
+@instruction
 def not_to_command(root, destination):
 	"""
 		Обаращает значение данной ячейки.
@@ -558,7 +562,7 @@ def not_to_command(root, destination):
 
 	return visit(destination, "+") + "[[-]" + visit(destination, "-") + "]"
 
-@command
+@instruction
 def bool_not_to_command(root, destination):
 	"""
 		Обаращает значение данной ячейки.
@@ -578,7 +582,7 @@ def bool_not_to_command(root, destination):
 
 	return visit(destination, "+") + "[-" + visit(destination, "-") + "]"
 
-@command
+@instruction
 def bool_to_command(root, destination):
 	"""
 		Конвертирует данную ячейку в булево значение.
@@ -596,7 +600,7 @@ def bool_to_command(root, destination):
 
 	return "[[-]" + visit(destination, "+") + "]"
 
-@command
+@instruction
 def not_and_to_command(root, destination):
 	"""
 		Выполняет логическое и с заданной ячейкой и обращённой данной.
@@ -614,7 +618,7 @@ def not_and_to_command(root, destination):
 
 	return "[[-]" + visit(destination, "[-]") + "]"
 
-@command
+@instruction
 def not_and_to_save_command(root, destination, buffer):
 	"""
 		Выполняет логическое и с заданной ячейкой и обращённой данной, сохраняя её значение.
@@ -636,7 +640,7 @@ def not_and_to_save_command(root, destination, buffer):
 
 	return "[-" + visit(buffer, "+") + visit(destination, "[-]") + "]" + visit(buffer, "[-" + visit(-buffer, "+") + "]")
 
-@command
+@instruction
 def split_byte_command(root):
 	"""
 		Разделяет байт на старшую и младшую половины.
@@ -660,7 +664,7 @@ def split_byte_command(root):
 
 	return ">>[<<++++++++++++++++>>[<<[->>-<]>]>[>]<<<[>>>>++++++++++++++++>>-<<<<<<[->>>>-<<<<]]>>>>>>+<<<<]<<"
 
-@command
+@instruction
 def hex_command(root):
 	"""
 		Конвертирует половину байта в строчную шестнадцатеричную цифру.
@@ -683,7 +687,7 @@ def hex_command(root):
 
 # Сетевые команды
 
-@command
+@instruction
 def network_accept_command(root):
 	"""
 		Принимает соединение.
@@ -695,7 +699,7 @@ def network_accept_command(root):
 
 	return ".,"
 
-@command
+@instruction
 def network_recv_command(root):
 	"""
 		Принимает данные.
@@ -711,7 +715,7 @@ def network_recv_command(root):
 
 	return ">+.-<.,"
 
-@command
+@instruction
 def network_send_command(root):
 	"""
 		Отправляет данные.
@@ -727,7 +731,7 @@ def network_send_command(root):
 
 	return ">++.--<."
 
-@command
+@instruction
 def network_close_command(root):
 	"""
 		Закрывает соединение.
@@ -745,7 +749,7 @@ def network_close_command(root):
 	Последовательность ячеек со значением 1, по краям которой нули.
 """
 
-@command
+@instruction
 def line_create_command(root, length):
 	"Создаёт линию указанной длины, которая не может быть меньше 2"
 
@@ -760,19 +764,19 @@ def line_create_command(root, length):
 
 	return result
 
-@command
+@instruction
 def line_go_start_command(root):
 	"Переходит к началу линии"
 
 	return "<[<]"
 
-@command
+@instruction
 def line_go_end_command(root):
 	"Переходит к концу линии"
 
 	return ">[>]"
 
-@command
+@instruction
 def line_clear_command(root):
 	"Очищает линию. Указатель должен быть на конце"
 
@@ -810,7 +814,7 @@ def line_clear_command(root):
 	Такую структуру удобно дополнять: с помощью цикла можно проехаться до конца массива и дописать ещё элемент. Или удалить последний.
 """
 
-@command
+@instruction
 def array_create_command(root, length):
 	"Создаёт пустой массив указанной длины"
 
@@ -823,7 +827,7 @@ def array_create_command(root, length):
 
 	return result + ">"
 
-@command
+@instruction
 def array_set_command(root, string):
 	"Создаёт массив из указанных байтов. Указатель остаётся на начале"
 
@@ -837,31 +841,31 @@ def array_set_command(root, string):
 		"<<" + "<<".join(increase(i - base) for i in reversed(string)) + "<<<"
 	)
 
-@command
+@instruction
 def array_go_end_command(root):
 	"Перемещается в конец массива"
 
 	return ">>[>>]"
 
-@command
+@instruction
 def array_go_start_command(root):
 	"Перемещается в начало массива"
 
 	return "<<[<<]"
 
-@command
+@instruction
 def array_clear_command(root):
 	"Очищает массив. Указатель должен быть на конце"
 
 	return "<<[->[-]<<<]"
 
-@block
+@instruction
 def array_foreach_block(root):
 	"Цикл по каждому элементу массива. Указатель остаётся на конце"
 
 	return ">>[", ">>]"
 
-@block
+@instruction
 def array_foreach_back_block(root):
 	"Цикл по каждому элементу массива в обратном порядке. Указатель остаётся на начале"
 
@@ -869,7 +873,7 @@ def array_foreach_back_block(root):
 
 # Пароль
 
-@command
+@instruction
 def check_password_command(root, string):
 	"""
 		Сравнивает массив с указанным паролем, удаляя его.
@@ -912,7 +916,7 @@ def check_password_command(root, string):
 	В результате получается массив массивов, по которому тоже можно перемещаться назад-вперёд.
 """
 
-@command
+@instruction
 def database_load_command(root, path):
 	"Загружает базу данных из файла в память, указатель остаётся на последнем чанке"
 
@@ -937,36 +941,36 @@ def database_load_command(root, path):
 
 	return result + "<<<<<"
 
-@command
+@instruction
 def database_go_next_command(root):
 	"Переходит к следующему чанку"
 
 	return ">>>>>" + array_go_end_command(root) + ">>>>>>>>>"
 
-@command
+@instruction
 def database_go_back_command(root):
 	"Переходит к предыдущему чанку"
 
 	return "<<<<<<<<<" + array_go_start_command(root) + "<<<<<"
 
-@command
+@instruction
 def database_go_end_command(root):
 	"Переходит к последнему чанку"
 
 	return "<<<<<<<[>>>>>>>" + database_go_next_command(root) + "<<<<<<<]>>>>>>>"
 
-@command
+@instruction
 def database_go_start_command(root):
 	"Переходит к первому чанку"
 
 	return "<<<<<<[>>>>>>" + database_go_back_command(root) + "<<<<<<]>>>>>>"
 
-@command
+@instruction
 def database_extend_chunk_command(root, string):
 	"""
 		Добавляет в чанк заданные байты. В нём должно быть достаточно для места, чтобы их вместить.
 
-		См. `append-database.txt`.
+		См. "lib/append-database.txt".
 	"""
 
 	if type(string) is str:
@@ -981,7 +985,7 @@ def database_extend_chunk_command(root, string):
 
 	return result
 
-@block
+@instruction
 def database_foreach_block(root):
 	"""
 		Цикл по каждому чанку. Указатель остаётся на последнем.
@@ -1010,8 +1014,8 @@ import json.decoder
 
 JSON_decoder = json.decoder.JSONDecoder()
 
-def parse_command(command):
-	name, tail = (command.split(maxsplit = 1) + [""])[: 2]
+def parse_instruction(instruction):
+	name, tail = (instruction.split(maxsplit = 1) + [""])[: 2]
 	arguments = []
 	shift = 0
 
@@ -1036,19 +1040,18 @@ def preprocess_part(code, root, stack):
 		line = line.split("//")[0].strip()
 
 		if line.startswith("#"):
-			command = line[1: ]
+			instruction = line[1: ]
 
-			if command == "END":
+			if instruction == "END":
 				code, shift = stack.pop()
 				result += go(shift) + code
 			else:
-				name, arguments, shift = parse_command(command)
+				name, arguments, shift = parse_instruction(instruction)
 
 				result += go(shift)
 
 				if name == "INCLUDE":
-					path, = arguments
-					path = os.path.join(root, path)
+					path = os.path.join(root, arguments[0])
 
 					with open(path) as file:
 						code = file.read()
@@ -1077,7 +1080,7 @@ def preprocess(code, root = "."):
 	result = preprocess_part(code, root, stack)
 
 	if len(stack) != 0:
-		raise Exception("Не хватает `END`")
+		raise Exception("Не хватает \"END`")
 
 	return result
 
@@ -1142,7 +1145,7 @@ def format(code):
 		if j % 2 == 0:
 			result += "\n".join(i[k: k + 80] for k in range(0, len(i), 80)) + "\n"
 		else:
-			result += "\nPassword:\n" + i.replace(">>", "\n>>") + "\n\n"
+			result += "\nПароль:\n" + i.replace(">>", "\n>>") + "\n\n"
 
 	return result
 
