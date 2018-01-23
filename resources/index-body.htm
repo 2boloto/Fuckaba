@@ -61,78 +61,84 @@
 </noscript>
 
 <script>
-	var main = function () {
-		var decodeImage = function (imageNode) {
-			var encodedData = imageNode.data.substr(31);
+	"use strict";
 
-			var type = "image/jpeg";
-			var data = new Uint8Array(encodedData.length / 3);
+	{
+		let global = this;
+		let document = global.document;
 
-			for (var i = 0; i < data.length; ++i) {
-				data[i] = Number.parseInt(encodedData.substr(i * 3 + 1, 2), 16);
+		let main = function () {
+			let decodeImage = function (imageNode) {
+				let encodedData = imageNode.data.substr(31);
+
+				let type = "image/jpeg";
+				let data = new Uint8Array(encodedData.length / 3);
+
+				for (let i = 0; i < data.length; ++i) {
+					data[i] = Number.parseInt(encodedData.substr(i * 3 + 1, 2), 16);
+				}
+
+				return new Blob([data], {"type": imageNode.type});
+			};
+
+			for (let postNode of document.querySelectorAll("section:not(.form)")) {
+				let preNode = postNode.querySelector("pre");
+
+				let ID = Number.parseInt(postNode.id.substr(1));
+
+				preNode.innerHTML = preNode.innerHTML.replace(/&gt;&gt;[1-9][0-9]*/g, function (match) {
+					let reference = Number.parseInt(match.substr(8));
+
+					if (reference < ID) {
+						let href = reference.toString();
+
+						return "<a href = \"#p" + "000".substr(href.length) + href + "\">" + match + "</a>";
+					} else {
+						return match;
+					}
+				}).replace(/^&gt;.*$/gm, function (match) {
+						return "<span class = \"quote\">" + match + "</span>";
+				});
+
+				let imageNode = postNode.querySelector("object");
+				let linkNode = document.createElement("a");
+				let newImageNode = document.createElement("img");
+
+				let image = decodeImage(imageNode);
+				let link = URL.createObjectURL(image);
+
+				newImageNode.addEventListener("load", function (event) {
+					this.classList.add("picture");
+				});
+
+				newImageNode.addEventListener("error", function (event) {
+					this.parentNode.parentNode.removeChild(this.parentNode);
+				});
+
+				newImageNode.src = link;
+				linkNode.href = link;
+
+				imageNode.parentNode.insertBefore(linkNode, imageNode);
+				imageNode.parentNode.removeChild(imageNode);
+				linkNode.appendChild(newImageNode);
+
+				newImageNode.data = link;
+				newImageNode.type = image.type;
 			}
 
-			return new Blob([data], {"type": imageNode.type});
+			let adminNode = document.querySelector("#admin");
+
+			let showAdmin = function () {
+				adminNode.style.display = location.hash === "#admin" ? "block" : "none";
+			};
+
+			global.window.addEventListener("hashchange", showAdmin);
+
+			showAdmin();
 		};
 
-		for (var postNode of document.querySelectorAll("section:not(.form)")) {
-			var preNode = postNode.querySelector("pre");
-
-			var ID = Number.parseInt(postNode.id.substr(1));
-
-			preNode.innerHTML = preNode.innerHTML.replace(/&gt;&gt;[1-9][0-9]*/g, function (match) {
-				var reference = Number.parseInt(match.substr(8));
-
-				if (reference < ID) {
-					var href = reference.toString();
-
-					return "<a href = \"#p" + "000".substr(href.length) + href + "\">" + match + "</a>";
-				} else {
-					return match;
-				}
-			}).replace(/^&gt;.*$/gm, function (match) {
-					return "<span class = \"quote\">" + match + "</span>";
-			});
-
-
-			var imageNode = postNode.querySelector("object");
-			var linkNode = document.createElement("a");
-			var newImageNode = document.createElement("img");
-
-			var image = decodeImage(imageNode);
-			var link = URL.createObjectURL(image);
-
-			newImageNode.addEventListener("load", function (event) {
-				this.classList.add("picture");
-			});
-
-			newImageNode.addEventListener("error", function (event) {
-				this.parentNode.parentNode.removeChild(this.parentNode);
-			});
-
-			newImageNode.src = link;
-			linkNode.href = link;
-
-			imageNode.parentNode.insertBefore(linkNode, imageNode);
-			imageNode.parentNode.removeChild(imageNode);
-			linkNode.appendChild(newImageNode);
-
-			newImageNode.data = link;
-			newImageNode.type = image.type;
-		}
-
-		var adminNode = document.querySelector("#admin");
-
-		var showAdmin = function () {
-			adminNode.style.display = location.hash === "#admin" ? "block" : "none";
-		};
-
-		window.addEventListener("hashchange", showAdmin);
-
-		showAdmin();
-	};
-
-	document.addEventListener("DOMContentLoaded", main);
+		document.addEventListener("DOMContentLoaded", main);
+	}
 </script>
 
 <h1>Факаба</h1>
